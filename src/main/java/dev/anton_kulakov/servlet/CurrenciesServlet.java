@@ -1,23 +1,59 @@
 package dev.anton_kulakov.servlet;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import model.Currency;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
-
-@WebServlet(name = "currenciesServlet", value = "/currencies")
 public class CurrenciesServlet extends HttpServlet {
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private static final String URL = "jdbc:sqlite:C:/Users/anton/IdeaProjects/CurrencyExchange/src/main/resources/database.db";
 
+    public void init() throws ServletException {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            throw new ServletException("Failed to load SQLite JDBC driver", e);
+        }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        List<Currency> currencyList = new ArrayList<>();
+        ObjectMapper objectMapper = new ObjectMapper();
 
+        try (Connection connection = DriverManager.getConnection(URL)) {
+            String SQLQuery = "SELECT * FROM Currencies";
+
+            try (PreparedStatement statement = connection.prepareStatement(SQLQuery);
+            ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    Currency currency = new Currency();
+
+                    currency.setId(resultSet.getInt("id"));
+                    currency.setCode(resultSet.getString("code"));
+                    currency.setFullName(resultSet.getString("fullname"));
+                    currency.setSign(resultSet.getString("sign"));
+
+                    currencyList.add(currency);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String jsonCurrencies = objectMapper.writeValueAsString(currencyList);
+        resp.setContentType("application/json; charset=UTF-8");
+        resp.setStatus(200);
+        PrintWriter out = resp.getWriter();
+        out.write(jsonCurrencies);
     }
 }
