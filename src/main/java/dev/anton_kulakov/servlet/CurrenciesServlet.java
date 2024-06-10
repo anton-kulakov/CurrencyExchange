@@ -32,8 +32,8 @@ public class CurrenciesServlet extends HttpServlet {
         try (Connection connection = DriverManager.getConnection(URL)) {
             String SQLQuery = "SELECT * FROM Currencies";
 
-            try (PreparedStatement statement = connection.prepareStatement(SQLQuery);
-            ResultSet resultSet = statement.executeQuery()) {
+            try (Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(SQLQuery)) {
 
                 while (resultSet.next()) {
                     Currency currency = new Currency();
@@ -47,7 +47,7 @@ public class CurrenciesServlet extends HttpServlet {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            resp.setStatus(500);
         }
 
         String jsonCurrencies = objectMapper.writeValueAsString(currencyList);
