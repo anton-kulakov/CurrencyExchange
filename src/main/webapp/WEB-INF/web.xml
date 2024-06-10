@@ -19,5 +19,13 @@
         <servlet-name>CurrenciesServlet</servlet-name>
         <url-pattern>/currencies</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>CurrencyServlet</servlet-name>
+        <servlet-class>dev.anton_kulakov.servlet.CurrencyServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CurrencyServlet</servlet-name>
+        <url-pattern>/currency/*</url-pattern>
+    </servlet-mapping>
 </web-app>
 
