@@ -56,4 +56,29 @@ public class CurrenciesServlet extends HttpServlet {
         PrintWriter out = resp.getWriter();
         out.write(jsonCurrencies);
     }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json; chrset=UTF-8");
+
+        String code = req.getParameter("code");
+        String name = req.getParameter("name");
+        String sign = req.getParameter("sign");
+        String SQLQuery = "INSERT INTO Currencies (Code, FullName, Sign) VALUES(?, ?, ?)";
+
+        try (Connection connection = DriverManager.getConnection(URL);
+        PreparedStatement statement = connection.prepareStatement(SQLQuery)) {
+
+            statement.setString(1, code);
+            statement.setString(2, name);
+            statement.setString(3, sign);
+
+            statement.executeUpdate();
+
+            resp.sendRedirect(req.getContextPath() + "/currency/" + code);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
