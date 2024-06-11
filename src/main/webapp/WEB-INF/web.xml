@@ -27,5 +27,13 @@
         <servlet-name>CurrencyServlet</servlet-name>
         <url-pattern>/currency/*</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>ExchangeRatesServlet</servlet-name>
+        <servlet-class>dev.anton_kulakov.servlet.ExchangeRatesServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ExchangeRatesServlet</servlet-name>
+        <url-pattern>/exchangeRates</url-pattern>
+    </servlet-mapping>
 </web-app>
 
