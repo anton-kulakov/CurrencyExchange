@@ -82,4 +82,52 @@ public class ExchangeRatesServlet extends HttpServlet {
         PrintWriter out = resp.getWriter();
         out.write(jsonExchangeRates);
     }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json; charset=UTF-8");
+
+        String baseCurrencyCode = req.getParameter("baseCurrencyCode");
+        String targetCurrencyCode = req.getParameter("targetCurrencyCode");
+        Double rate = Double.valueOf(req.getParameter("rate"));
+
+        String currencyIDQuery = "SELECT id FROM Currencies WHERE Code = ?";
+        String SQLQuery = "INSERT INTO ExchangeRates (BaseCurrencyID, TargetCurrencyID, Rate) " +
+                "VALUES (?, ?, ?)";
+
+        try (Connection connection = DriverManager.getConnection(URL);
+        PreparedStatement baseCurrencyStatement = connection.prepareStatement(currencyIDQuery);
+        PreparedStatement targetCurrencyStatement = connection.prepareStatement(currencyIDQuery);
+        PreparedStatement addExchangeRateStatement = connection.prepareStatement(SQLQuery)) {
+
+            baseCurrencyStatement.setString(1, baseCurrencyCode);
+            targetCurrencyStatement.setString(1, targetCurrencyCode);
+
+            int baseCurrencyID = 0;
+            int targetCurrencyID = 0;
+
+            try (ResultSet resultSet = baseCurrencyStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    baseCurrencyID = resultSet.getInt("ID");
+                }
+            }
+
+            try (ResultSet resultSet = targetCurrencyStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    targetCurrencyID = resultSet.getInt("ID");
+                }
+            }
+
+            addExchangeRateStatement.setInt(1, baseCurrencyID);
+            addExchangeRateStatement.setInt(2, targetCurrencyID);
+            addExchangeRateStatement.setDouble(3, rate);
+
+            addExchangeRateStatement.executeUpdate();
+
+            resp.sendRedirect(req.getContextPath() + "/exchangeRate/" + baseCurrencyCode + targetCurrencyCode);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

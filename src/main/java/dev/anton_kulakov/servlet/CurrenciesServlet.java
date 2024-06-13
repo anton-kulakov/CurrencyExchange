@@ -60,7 +60,7 @@ public class CurrenciesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
-        resp.setContentType("application/json; chrset=UTF-8");
+        resp.setContentType("application/json; charset=UTF-8");
 
         String code = req.getParameter("code");
         String name = req.getParameter("name");
