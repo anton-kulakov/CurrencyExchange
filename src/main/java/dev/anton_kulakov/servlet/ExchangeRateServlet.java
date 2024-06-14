@@ -86,4 +86,65 @@ public class ExchangeRateServlet extends HttpServlet {
         PrintWriter out = resp.getWriter();
         out.write(jsonExchangeRate);
     }
+
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String method = req.getMethod();
+
+        if("PATCH".equalsIgnoreCase(method)) {
+            doPatch(req, resp);
+        } else {
+            super.service(req, resp);
+        }
+    }
+
+    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json; charset=UTF-8");
+
+        String pathInfo = req.getPathInfo();
+        String[] pathParts = pathInfo.split("/");
+        String currencyPair = pathParts[1];
+        String baseCurrencyCode = currencyPair.substring(0, 3);
+        String targetCurrencyCode = currencyPair.substring(3, 6);
+        double rate = Double.parseDouble(req.getParameter("rate"));
+
+        String currencyIDQuery = "SELECT id FROM Currencies WHERE Code = ?";
+        String SQLQuery = "UPDATE ExchangeRates SET Rate = ? WHERE BaseCurrencyID = ? " +
+                "AND TargetCurrencyID = ?";
+
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement baseCurrencyStatement = connection.prepareStatement(currencyIDQuery);
+             PreparedStatement targetCurrencyStatement = connection.prepareStatement(currencyIDQuery);
+             PreparedStatement updateExchangeRateStatement = connection.prepareStatement(SQLQuery)) {
+
+            baseCurrencyStatement.setString(1, baseCurrencyCode);
+            targetCurrencyStatement.setString(1, targetCurrencyCode);
+
+            int baseCurrencyID = 0;
+            int targetCurrencyID = 0;
+
+            try (ResultSet resultSet = baseCurrencyStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    baseCurrencyID = resultSet.getInt("ID");
+                }
+            }
+
+            try (ResultSet resultSet = targetCurrencyStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    targetCurrencyID = resultSet.getInt("ID");
+                }
+            }
+
+            updateExchangeRateStatement.setDouble(1, rate);
+            updateExchangeRateStatement.setInt(2, baseCurrencyID);
+            updateExchangeRateStatement.setInt(3, targetCurrencyID);
+
+            updateExchangeRateStatement.executeUpdate();
+
+            doGet(req, resp);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

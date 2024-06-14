@@ -90,7 +90,7 @@ public class ExchangeRatesServlet extends HttpServlet {
 
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
-        Double rate = Double.valueOf(req.getParameter("rate"));
+        double rate = Double.parseDouble(req.getParameter("rate"));
 
         String currencyIDQuery = "SELECT id FROM Currencies WHERE Code = ?";
         String SQLQuery = "INSERT INTO ExchangeRates (BaseCurrencyID, TargetCurrencyID, Rate) " +
