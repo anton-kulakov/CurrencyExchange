@@ -1,17 +1,19 @@
 package utils;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public final class ConnectionManager {
-    private static final String URL_KEY= "db.url";
-    public static Connection open() {
-        try {
-            return DriverManager.getConnection(PropertiesUtil.get(URL_KEY));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    private static HikariDataSource dataSource;
+    static {
+        HikariConfig config = new HikariConfig("/database.properties");
+        dataSource = new HikariDataSource(config);
+    }
+    public static Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
     }
     private ConnectionManager() {
 
