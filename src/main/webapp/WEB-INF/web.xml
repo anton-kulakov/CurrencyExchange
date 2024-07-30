@@ -43,5 +43,13 @@
         <servlet-name>ExchangeRateServlet</servlet-name>
         <url-pattern>/exchangeRate/*</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>ExchangeServlet</servlet-name>
+        <servlet-class>dev.anton_kulakov.servlet.ExchangeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ExchangeServlet</servlet-name>
+        <url-pattern>/exchange/*</url-pattern>
+    </servlet-mapping>
 </web-app>
 
