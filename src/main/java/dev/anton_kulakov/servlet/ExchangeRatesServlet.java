@@ -67,7 +67,7 @@ public class ExchangeRatesServlet extends HttpServlet {
                     exchangeRate.setId(resultSet.getInt("id"));
                     exchangeRate.setBaseCurrency(baseCurrency);
                     exchangeRate.setTargetCurrency(targetCurrency);
-                    exchangeRate.setRate(resultSet.getDouble("rate"));
+                    exchangeRate.setRate(resultSet.getBigDecimal("rate"));
 
                     exchangeRateList.add(exchangeRate);
                 }

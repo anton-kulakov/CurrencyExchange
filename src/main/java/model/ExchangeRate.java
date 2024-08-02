@@ -1,10 +1,22 @@
 package model;
 
+import java.math.BigDecimal;
+
 public class ExchangeRate {
     int id;
     Currency baseCurrency;
     Currency targetCurrency;
-    double rate;
+    BigDecimal rate;
+
+    public ExchangeRate() {
+    }
+
+    public ExchangeRate(int id, Currency baseCurrency, Currency targetCurrency, BigDecimal rate) {
+        this.id = id;
+        this.baseCurrency = baseCurrency;
+        this.targetCurrency = targetCurrency;
+        this.rate = rate;
+    }
 
     public int getId() {
         return id;
@@ -30,11 +42,21 @@ public class ExchangeRate {
         this.targetCurrency = targetCurrency;
     }
 
-    public double getRate() {
+    public BigDecimal getRate() {
         return rate;
     }
 
-    public void setRate(double rate) {
+    public void setRate(BigDecimal rate) {
         this.rate = rate;
+    }
+
+    @Override
+    public String toString() {
+        return "ExchangeRate{" +
+               "id=" + id +
+               ", baseCurrency=" + baseCurrency +
+               ", targetCurrency=" + targetCurrency +
+               ", rate=" + rate +
+               '}';
     }
 }

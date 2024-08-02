@@ -72,7 +72,7 @@ public class ExchangeRateServlet extends HttpServlet {
                     exchangeRate.setId(resultSet.getInt("id"));
                     exchangeRate.setBaseCurrency(baseCurrency);
                     exchangeRate.setTargetCurrency(targetCurrency);
-                    exchangeRate.setRate(resultSet.getDouble("rate"));
+                    exchangeRate.setRate(resultSet.getBigDecimal("rate"));
                 }
             }
 
@@ -110,7 +110,9 @@ public class ExchangeRateServlet extends HttpServlet {
         double rate = Double.parseDouble(req.getParameter("rate"));
 
         String currencyIDQuery = "SELECT id FROM Currencies WHERE Code = ?";
-        String SQLQuery = "UPDATE ExchangeRates SET Rate = ? WHERE BaseCurrencyID = ? " +
+        String SQLQuery = "UPDATE ExchangeRates " +
+                          "SET Rate = ? " +
+                          "WHERE BaseCurrencyID = ? " +
                 "AND TargetCurrencyID = ?";
 
         try (Connection connection = DriverManager.getConnection(URL);
