@@ -1,6 +1,7 @@
 package dev.anton_kulakov.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dao.CurrencyDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,11 +10,8 @@ import model.Currency;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.*;
 
 public class CurrencyServlet extends HttpServlet {
-    private static final String URL = "jdbc:sqlite:C:/Users/anton/IdeaProjects/CurrencyExchange/src/main/resources/database.db";
-
     public void init() throws ServletException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -28,27 +26,9 @@ public class CurrencyServlet extends HttpServlet {
         String[] pathParts = pathInfo.split("/");
         String currencyCode = pathParts[1];
 
-        Currency currency = new Currency();
         ObjectMapper objectMapper = new ObjectMapper();
-        String SQLQuery = "SELECT * FROM Currencies WHERE Code = ?";
-
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement statement = connection.prepareStatement(SQLQuery)) {
-
-            statement.setString(1, currencyCode);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-
-                while (resultSet.next()) {
-                    currency.setId(resultSet.getInt("id"));
-                    currency.setCode(resultSet.getString("code"));
-                    currency.setFullName(resultSet.getString("fullname"));
-                    currency.setSign(resultSet.getString("sign"));
-                }
-            }
-        } catch (SQLException e) {
-            resp.setStatus(500);
-        }
+        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
+        Currency currency = currencyDAO.getByCode(currencyCode).get();
 
         String jsonCurrency = objectMapper.writeValueAsString(currency);
         resp.setContentType("application/json; charset=UTF-8");
