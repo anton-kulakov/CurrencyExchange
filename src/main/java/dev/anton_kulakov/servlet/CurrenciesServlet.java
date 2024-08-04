@@ -1,6 +1,7 @@
 package dev.anton_kulakov.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dao.CurrencyDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,12 +10,9 @@ import model.Currency;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CurrenciesServlet extends HttpServlet {
-    private static final String URL = "jdbc:sqlite:C:/Users/anton/IdeaProjects/CurrencyExchange/src/main/resources/database.db";
 
     public void init() throws ServletException {
         try {
@@ -25,32 +23,12 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<Currency> currencyList = new ArrayList<>();
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
+        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
 
-        try (Connection connection = DriverManager.getConnection(URL)) {
-            String SQLQuery = "SELECT * FROM Currencies";
-
-            try (Statement statement = connection.createStatement();
-                 ResultSet resultSet = statement.executeQuery(SQLQuery)) {
-
-                while (resultSet.next()) {
-                    Currency currency = new Currency();
-
-                    currency.setId(resultSet.getInt("id"));
-                    currency.setCode(resultSet.getString("code"));
-                    currency.setFullName(resultSet.getString("fullname"));
-                    currency.setSign(resultSet.getString("sign"));
-
-                    currencyList.add(currency);
-                }
-            }
-        } catch (SQLException e) {
-            resp.setStatus(500);
-        }
-
-        String jsonCurrencies = objectMapper.writeValueAsString(currencyList);
+        List<Currency> currencies = currencyDAO.getAll();
+        String jsonCurrencies = objectMapper.writeValueAsString(currencies);
         resp.setContentType("application/json; charset=UTF-8");
         resp.setStatus(200);
         PrintWriter out = resp.getWriter();
@@ -58,27 +36,19 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json; charset=UTF-8");
+        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
 
-        String code = req.getParameter("code");
-        String name = req.getParameter("name");
-        String sign = req.getParameter("sign");
-        String SQLQuery = "INSERT INTO Currencies (Code, FullName, Sign) VALUES(?, ?, ?)";
+        Currency currency = new Currency(
+                0,
+                req.getParameter("code"),
+                req.getParameter("name"),
+                req.getParameter("sign")
+        );
 
-        try (Connection connection = DriverManager.getConnection(URL);
-        PreparedStatement statement = connection.prepareStatement(SQLQuery)) {
-
-            statement.setString(1, code);
-            statement.setString(2, name);
-            statement.setString(3, sign);
-
-            statement.executeUpdate();
-
-            resp.sendRedirect(req.getContextPath() + "/currency/" + code);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        currencyDAO.save(currency);
+        resp.sendRedirect(req.getContextPath() + "/currency/" + req.getParameter("code"));
     }
 }
