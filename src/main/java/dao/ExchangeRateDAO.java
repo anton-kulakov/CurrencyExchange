@@ -35,10 +35,8 @@ public class ExchangeRateDAO {
             """;
     private final static String UPDATE_SQL = """
             UPDATE ExchangeRates
-            SET BaseCurrencyId = ?,
-                TargetCurrencyId = ?,
-                Rate = ? 
-            WHERE ID = ?
+            SET Rate = ? 
+            WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?
             """;
     private final static String GET_BY_CODE_SQL = GET_ALL_SQL + """
             WHERE bc.Code = ? AND tc.Code = ?
@@ -82,21 +80,21 @@ public class ExchangeRateDAO {
         }
     }
 
-    public Optional<ExchangeRate> getByCode(String baseCurrencyCode, String targetCurrencyCode) {
+    public ExchangeRate getByCode(ExchangeRate exchangeRate) {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_BY_CODE_SQL)) {
 
-            statement.setString(1, baseCurrencyCode);
-            statement.setString(2, targetCurrencyCode);
+            statement.setString(1, exchangeRate.getBaseCurrency().getCode());
+            statement.setString(2, exchangeRate.getTargetCurrency().getCode());
 
             ResultSet resultSet = statement.executeQuery();
-            ExchangeRate exchangeRate = null;
 
             if (resultSet.next()) {
-                exchangeRate = createExchangeRate(resultSet);
+                exchangeRate.setId(resultSet.getInt("id"));
+                exchangeRate.setRate(resultSet.getBigDecimal("rate"));
             }
 
-            return Optional.ofNullable(exchangeRate);
+            return exchangeRate;
         } catch (SQLException e) {
             throw new DAOException(e);
         }
@@ -128,10 +126,9 @@ public class ExchangeRateDAO {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
 
-            statement.setInt(1, exchangeRate.getBaseCurrency().getId());
-            statement.setInt(2, exchangeRate.getTargetCurrency().getId());
-            statement.setBigDecimal(3, exchangeRate.getRate());
-            statement.setInt(4, exchangeRate.getId());
+            statement.setBigDecimal(1, exchangeRate.getRate());
+            statement.setInt(2, exchangeRate.getBaseCurrency().getId());
+            statement.setInt(3, exchangeRate.getTargetCurrency().getId());
 
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {
