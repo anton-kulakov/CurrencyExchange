@@ -1,4 +1,4 @@
-package dev.anton_kulakov.servlet;
+package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;

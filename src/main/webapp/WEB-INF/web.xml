@@ -5,7 +5,7 @@
          version="5.0">
     <servlet>
         <servlet-name>GetStartPageServlet</servlet-name>
-        <servlet-class>dev.anton_kulakov.servlet.GetStartPageServlet</servlet-class>
+        <servlet-class>servlet.GetStartPageServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>GetStartPageServlet</servlet-name>
@@ -13,7 +13,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>CurrenciesServlet</servlet-name>
-        <servlet-class>dev.anton_kulakov.servlet.CurrenciesServlet</servlet-class>
+        <servlet-class>servlet.CurrenciesServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>CurrenciesServlet</servlet-name>
@@ -21,7 +21,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>CurrencyServlet</servlet-name>
-        <servlet-class>dev.anton_kulakov.servlet.CurrencyServlet</servlet-class>
+        <servlet-class>servlet.CurrencyServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>CurrencyServlet</servlet-name>
@@ -29,7 +29,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>ExchangeRatesServlet</servlet-name>
-        <servlet-class>dev.anton_kulakov.servlet.ExchangeRatesServlet</servlet-class>
+        <servlet-class>servlet.ExchangeRatesServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ExchangeRatesServlet</servlet-name>
@@ -37,7 +37,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>ExchangeRateServlet</servlet-name>
-        <servlet-class>dev.anton_kulakov.servlet.ExchangeRateServlet</servlet-class>
+        <servlet-class>servlet.ExchangeRateServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ExchangeRateServlet</servlet-name>
@@ -45,7 +45,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>ExchangeServlet</servlet-name>
-        <servlet-class>dev.anton_kulakov.servlet.ExchangeServlet</servlet-class>
+        <servlet-class>servlet.ExchangeServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ExchangeServlet</servlet-name>

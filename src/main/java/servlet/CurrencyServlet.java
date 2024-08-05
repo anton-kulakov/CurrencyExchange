@@ -1,4 +1,4 @@
-package dev.anton_kulakov.servlet;
+package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
@@ -10,10 +10,8 @@ import model.Currency;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 
-public class CurrenciesServlet extends HttpServlet {
-
+public class CurrencyServlet extends HttpServlet {
     public void init() throws ServletException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -24,31 +22,18 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo();
+        String[] pathParts = pathInfo.split("/");
+        String currencyCode = pathParts[1];
+
         ObjectMapper objectMapper = new ObjectMapper();
         CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
+        Currency currency = currencyDAO.getByCode(currencyCode).get();
 
-        List<Currency> currencies = currencyDAO.getAll();
-        String jsonCurrencies = objectMapper.writeValueAsString(currencies);
+        String jsonCurrency = objectMapper.writeValueAsString(currency);
         resp.setContentType("application/json; charset=UTF-8");
         resp.setStatus(200);
         PrintWriter out = resp.getWriter();
-        out.write(jsonCurrencies);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        req.setCharacterEncoding("UTF-8");
-        resp.setContentType("application/json; charset=UTF-8");
-        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
-
-        Currency currency = new Currency(
-                0,
-                req.getParameter("code"),
-                req.getParameter("name"),
-                req.getParameter("sign")
-        );
-
-        currencyDAO.save(currency);
-        resp.sendRedirect(req.getContextPath() + "/currency/" + req.getParameter("code"));
+        out.write(jsonCurrency);
     }
 }

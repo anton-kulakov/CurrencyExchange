@@ -1,20 +1,19 @@
-package dev.anton_kulakov.servlet;
+package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
-import dao.ExchangeRateDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.ExchangeRate;
+import model.Currency;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.math.BigDecimal;
 import java.util.List;
 
-public class ExchangeRatesServlet extends HttpServlet {
+public class CurrenciesServlet extends HttpServlet {
+
     public void init() throws ServletException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -26,35 +25,30 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
+        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
 
-        List<ExchangeRate> exchangeRates = exchangeRateDAO.getAll();
-        String jsonExchangeRates = objectMapper.writeValueAsString(exchangeRates);
+        List<Currency> currencies = currencyDAO.getAll();
+        String jsonCurrencies = objectMapper.writeValueAsString(currencies);
         resp.setContentType("application/json; charset=UTF-8");
         resp.setStatus(200);
         PrintWriter out = resp.getWriter();
-        out.write(jsonExchangeRates);
+        out.write(jsonCurrencies);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json; charset=UTF-8");
-
-        String baseCurrencyCode = req.getParameter("baseCurrencyCode");
-        String targetCurrencyCode = req.getParameter("targetCurrencyCode");
-        BigDecimal rate = new BigDecimal(req.getParameter("rate"));
-
         CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
-        ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
 
-        exchangeRateDAO.save(new ExchangeRate(
+        Currency currency = new Currency(
                 0,
-                currencyDAO.getByCode(baseCurrencyCode).get(),
-                currencyDAO.getByCode(targetCurrencyCode).get(),
-                rate
-        ));
+                req.getParameter("code"),
+                req.getParameter("name"),
+                req.getParameter("sign")
+        );
 
-        resp.sendRedirect(req.getContextPath() + "/exchangeRate/" + baseCurrencyCode + targetCurrencyCode);
+        currencyDAO.save(currency);
+        resp.sendRedirect(req.getContextPath() + "/currency/" + req.getParameter("code"));
     }
 }
