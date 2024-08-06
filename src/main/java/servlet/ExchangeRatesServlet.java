@@ -3,8 +3,6 @@ package servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
 import dao.ExchangeRateDAO;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.ExchangeRate;
@@ -14,17 +12,10 @@ import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class ExchangeRatesServlet extends HttpServlet {
+public class ExchangeRatesServlet extends MainServlet {
     private final ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    public void init() throws ServletException {
-        try {
-            Class.forName("org.sqlite.JDBC");
-        } catch (ClassNotFoundException e) {
-            throw new ServletException("Failed to load SQLite JDBC driver", e);
-        }
-    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
