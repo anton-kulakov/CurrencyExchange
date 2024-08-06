@@ -15,6 +15,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class ExchangeRatesServlet extends HttpServlet {
+    private final ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
+    private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     public void init() throws ServletException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -25,9 +28,6 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
-
         List<ExchangeRate> exchangeRates = exchangeRateDAO.getAll();
         String jsonExchangeRates = objectMapper.writeValueAsString(exchangeRates);
         resp.setContentType("application/json; charset=UTF-8");
@@ -45,15 +45,14 @@ public class ExchangeRatesServlet extends HttpServlet {
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
         BigDecimal rate = new BigDecimal(req.getParameter("rate"));
 
-        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
-        ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
-
-        exchangeRateDAO.save(new ExchangeRate(
-                0,
-                currencyDAO.getByCode(baseCurrencyCode).get(),
-                currencyDAO.getByCode(targetCurrencyCode).get(),
-                rate
-        ));
+        exchangeRateDAO.save(
+                new ExchangeRate(
+                        0,
+                        currencyDAO.getByCode(baseCurrencyCode).get(),
+                        currencyDAO.getByCode(targetCurrencyCode).get(),
+                        rate
+                )
+        );
 
         resp.sendRedirect(req.getContextPath() + "/exchangeRate/" + baseCurrencyCode + targetCurrencyCode);
     }

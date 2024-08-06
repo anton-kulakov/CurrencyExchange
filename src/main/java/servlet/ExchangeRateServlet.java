@@ -14,6 +14,9 @@ import java.io.PrintWriter;
 import java.math.BigDecimal;
 
 public class ExchangeRateServlet extends HttpServlet {
+    private final ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
+    private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     public void init() throws ServletException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -30,16 +33,14 @@ public class ExchangeRateServlet extends HttpServlet {
         String baseCurrencyCode = currencyPair.substring(0, 3);
         String targetCurrencyCode = currencyPair.substring(3);
 
-        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
-        ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        ExchangeRate exchangeRate = exchangeRateDAO.getByCode(new ExchangeRate(
-                0,
-                currencyDAO.getByCode(baseCurrencyCode).get(),
-                currencyDAO.getByCode(targetCurrencyCode).get(),
-                new BigDecimal(0)
-        ));
+        ExchangeRate exchangeRate = exchangeRateDAO.getByCode(
+                new ExchangeRate(
+                        0,
+                        currencyDAO.getByCode(baseCurrencyCode).get(),
+                        currencyDAO.getByCode(targetCurrencyCode).get(),
+                        new BigDecimal(0)
+                )
+        );
 
         String jsonExchangeRate = objectMapper.writeValueAsString(exchangeRate);
         resp.setContentType("application/json; charset=UTF-8");
@@ -68,9 +69,6 @@ public class ExchangeRateServlet extends HttpServlet {
         String currencyPair = pathParts[1];
         String baseCurrencyCode = currencyPair.substring(0, 3);
         String targetCurrencyCode = currencyPair.substring(3, 6);
-
-        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
-        ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
 
         ExchangeRate exchangeRate = new ExchangeRate(
                 0,

@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class CurrencyServlet extends HttpServlet {
+    private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     public void init() throws ServletException {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -26,8 +28,6 @@ public class CurrencyServlet extends HttpServlet {
         String[] pathParts = pathInfo.split("/");
         String currencyCode = pathParts[1];
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
         Currency currency = currencyDAO.getByCode(currencyCode).get();
 
         String jsonCurrency = objectMapper.writeValueAsString(currency);

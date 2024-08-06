@@ -13,6 +13,8 @@ import java.io.PrintWriter;
 import java.util.List;
 
 public class CurrenciesServlet extends HttpServlet {
+    private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void init() throws ServletException {
         try {
@@ -24,9 +26,6 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
-
         List<Currency> currencies = currencyDAO.getAll();
         String jsonCurrencies = objectMapper.writeValueAsString(currencies);
         resp.setContentType("application/json; charset=UTF-8");
@@ -39,7 +38,6 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json; charset=UTF-8");
-        CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
 
         Currency currency = new Currency(
                 0,

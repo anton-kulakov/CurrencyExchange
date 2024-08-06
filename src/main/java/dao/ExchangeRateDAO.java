@@ -52,6 +52,7 @@ public class ExchangeRateDAO {
 
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
+
             if (generatedKeys.next()) {
                 exchangeRate.setId(generatedKeys.getInt(1));
             }
