@@ -51,5 +51,8 @@
         <servlet-name>ExchangeServlet</servlet-name>
         <url-pattern>/exchange/*</url-pattern>
     </servlet-mapping>
+    <listener>
+        <listener-class>listener.AppContextListener</listener-class>
+    </listener>
 </web-app>
 

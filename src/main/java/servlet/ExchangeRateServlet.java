@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
 import dao.ExchangeRateDAO;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.ExchangeRate;
@@ -12,7 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 
-public class ExchangeRateServlet extends MainServlet {
+public class ExchangeRateServlet extends HttpServlet {
     private final ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();

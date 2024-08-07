@@ -6,8 +6,19 @@ public class Exchange {
     private Currency baseCurrency;
     private Currency targetCurrency;
     private BigDecimal rate;
-    private double amount;
-    private double convertedAmount;
+    private BigDecimal amount;
+    private BigDecimal convertedAmount;
+
+    public Exchange() {
+    }
+
+    public Exchange(Currency baseCurrency, Currency targetCurrency, BigDecimal rate, BigDecimal amount, BigDecimal convertedAmount) {
+        this.baseCurrency = baseCurrency;
+        this.targetCurrency = targetCurrency;
+        this.rate = rate;
+        this.amount = amount;
+        this.convertedAmount = convertedAmount;
+    }
 
     public Currency getBaseCurrency() {
         return baseCurrency;
@@ -33,20 +44,31 @@ public class Exchange {
         this.rate = rate;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
-    public double getConvertedAmount() {
+    public BigDecimal getConvertedAmount() {
         return convertedAmount;
     }
 
-    public void setConvertedAmount(double convertedAmount) {
+    public void setConvertedAmount(BigDecimal convertedAmount) {
         this.convertedAmount = convertedAmount;
+    }
+
+    @Override
+    public String toString() {
+        return "Exchange{" +
+               "baseCurrency=" + baseCurrency +
+               ", targetCurrency=" + targetCurrency +
+               ", rate=" + rate +
+               ", amount=" + amount +
+               ", convertedAmount=" + convertedAmount +
+               '}';
     }
 }
 
