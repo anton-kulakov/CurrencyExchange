@@ -23,7 +23,6 @@ public class CurrencyServlet extends HttpServlet {
         Currency currency = currencyDAO.getByCode(currencyCode).get();
 
         String jsonCurrency = objectMapper.writeValueAsString(currency);
-        resp.setContentType("application/json; charset=UTF-8");
         resp.setStatus(200);
         PrintWriter out = resp.getWriter();
         out.write(jsonCurrency);

@@ -22,7 +22,6 @@ public class ExchangeRatesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<ExchangeRate> exchangeRates = exchangeRateDAO.getAll();
         String jsonExchangeRates = objectMapper.writeValueAsString(exchangeRates);
-        resp.setContentType("application/json; charset=UTF-8");
         resp.setStatus(200);
         PrintWriter out = resp.getWriter();
         out.write(jsonExchangeRates);
@@ -30,9 +29,6 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        req.setCharacterEncoding("UTF-8");
-        resp.setContentType("application/json; charset=UTF-8");
-
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
         BigDecimal rate = new BigDecimal(req.getParameter("rate"));

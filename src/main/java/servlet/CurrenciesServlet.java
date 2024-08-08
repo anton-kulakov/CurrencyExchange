@@ -19,7 +19,6 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         List<Currency> currencies = currencyDAO.getAll();
         String jsonCurrencies = objectMapper.writeValueAsString(currencies);
-        resp.setContentType("application/json; charset=UTF-8");
         resp.setStatus(200);
         PrintWriter out = resp.getWriter();
         out.write(jsonCurrencies);
@@ -27,8 +26,6 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        req.setCharacterEncoding("UTF-8");
-        resp.setContentType("application/json; charset=UTF-8");
 
         Currency currency = new Currency(
                 0,

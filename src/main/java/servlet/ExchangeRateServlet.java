@@ -36,7 +36,6 @@ public class ExchangeRateServlet extends HttpServlet {
         );
 
         String jsonExchangeRate = objectMapper.writeValueAsString(exchangeRate);
-        resp.setContentType("application/json; charset=UTF-8");
         resp.setStatus(200);
         PrintWriter out = resp.getWriter();
         out.write(jsonExchangeRate);
@@ -54,9 +53,6 @@ public class ExchangeRateServlet extends HttpServlet {
     }
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        req.setCharacterEncoding("UTF-8");
-        resp.setContentType("application/json; charset=UTF-8");
-
         String pathInfo = req.getPathInfo();
         String[] pathParts = pathInfo.split("/");
         String currencyPair = pathParts[1];
