@@ -4,14 +4,6 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
     <servlet>
-        <servlet-name>GetStartPageServlet</servlet-name>
-        <servlet-class>servlet.GetStartPageServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>GetStartPageServlet</servlet-name>
-        <url-pattern>/</url-pattern>
-    </servlet-mapping>
-    <servlet>
         <servlet-name>CurrenciesServlet</servlet-name>
         <servlet-class>servlet.CurrenciesServlet</servlet-class>
     </servlet>

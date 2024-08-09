@@ -6,9 +6,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Currency;
+import model.Error;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.util.Optional;
+
+import static jakarta.servlet.http.HttpServletResponse.*;
 
 public class CurrencyServlet extends HttpServlet {
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
@@ -16,15 +20,33 @@ public class CurrencyServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String pathInfo = req.getPathInfo();
-        String[] pathParts = pathInfo.split("/");
-        String currencyCode = pathParts[1];
+        String currencyCode = req.getPathInfo().replaceAll("/", "");
 
-        Currency currency = currencyDAO.getByCode(currencyCode).get();
+        if (currencyCode.isEmpty()) {
+            resp.setStatus(SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_BAD_REQUEST,
+                    "The currency code is empty."));
+        }
 
-        String jsonCurrency = objectMapper.writeValueAsString(currency);
-        resp.setStatus(200);
-        PrintWriter out = resp.getWriter();
-        out.write(jsonCurrency);
+        try {
+            Optional<Currency> currency = currencyDAO.getByCode(currencyCode);
+
+            if (currency.isEmpty()) {
+                resp.setStatus(SC_NOT_FOUND);
+                objectMapper.writeValue(resp.getWriter(), new Error(
+                        SC_NOT_FOUND,
+                        "The requested currency was not found."
+                ));
+
+            }
+
+            objectMapper.writeValue(resp.getWriter(), currency.get());
+        } catch (SQLException e) {
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_INTERNAL_SERVER_ERROR,
+                    "The database is unavailable. Please try again later."
+            ));
+        }
     }
 }

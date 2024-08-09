@@ -44,7 +44,7 @@ public class CurrencyDAO {
         }
     }
 
-    public List<Currency> getAll() {
+    public List<Currency> getAll() throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_ALL_SQL)) {
             List<Currency> currencies = new ArrayList<>();
@@ -57,12 +57,10 @@ public class CurrencyDAO {
             }
 
             return currencies;
-        } catch (SQLException e) {
-            throw new DAOException(e);
         }
     }
 
-    public Optional<Currency> getByCode(String code) {
+    public Optional<Currency> getByCode(String code) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_BY_CODE_SQL)) {
 
@@ -76,8 +74,6 @@ public class CurrencyDAO {
             }
 
             return Optional.ofNullable(currency);
-        } catch (SQLException e) {
-            throw new DAOException(e);
         }
     }
 
