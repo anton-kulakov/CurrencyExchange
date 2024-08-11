@@ -26,7 +26,10 @@ public class CurrencyServlet extends HttpServlet {
             resp.setStatus(SC_BAD_REQUEST);
             objectMapper.writeValue(resp.getWriter(), new Error(
                     SC_BAD_REQUEST,
-                    "The currency code is empty."));
+                    "The currency code is empty."
+            ));
+
+            return;
         }
 
         try {

@@ -1,6 +1,5 @@
 package dao;
 
-import exception.DAOException;
 import model.Currency;
 import utils.ConnectionManager;
 
@@ -24,7 +23,7 @@ public class CurrencyDAO {
             WHERE Code = ?
              """;
 
-    public Currency save(Currency currency) {
+    public int save(Currency currency) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -34,13 +33,14 @@ public class CurrencyDAO {
 
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
+            int id = -1;
+
             if (generatedKeys.next()) {
-                currency.setId(generatedKeys.getInt(1));
+                id = generatedKeys.getInt(1);
+                currency.setId(id);
             }
 
-            return currency;
-        } catch (SQLException e) {
-            throw new DAOException(e);
+            return id;
         }
     }
 

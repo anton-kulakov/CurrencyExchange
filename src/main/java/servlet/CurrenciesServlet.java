@@ -6,10 +6,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Currency;
+import model.Error;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.List;
+
+import static jakarta.servlet.http.HttpServletResponse.*;
 
 public class CurrenciesServlet extends HttpServlet {
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
@@ -17,24 +20,85 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        List<Currency> currencies = currencyDAO.getAll();
-        String jsonCurrencies = objectMapper.writeValueAsString(currencies);
-        resp.setStatus(200);
-        PrintWriter out = resp.getWriter();
-        out.write(jsonCurrencies);
+        try {
+            List<Currency> currencies = currencyDAO.getAll();
+            objectMapper.writeValue(resp.getWriter(), currencies);
+        } catch (SQLException e) {
+            resp.setStatus(SC_INTERNAL_SERVER_ERROR);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_INTERNAL_SERVER_ERROR,
+                    "The database is unavailable. Please try again later."
+            ));
+        }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String code = req.getParameter("code");
+        String name = req.getParameter("name");
+        String sign = req.getParameter("sign");
+
+        if (code.isEmpty() || code.isBlank()) {
+            resp.setStatus(SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_BAD_REQUEST,
+                    "The currency code is empty."
+            ));
+
+            return;
+        }
+
+        if (name.isEmpty() || name.isBlank()) {
+            resp.setStatus(SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_BAD_REQUEST,
+                    "The name of currency is empty."
+            ));
+
+            return;
+        }
+
+        if (sign.isEmpty() || sign.isBlank()) {
+            resp.setStatus(SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_BAD_REQUEST,
+                    "The sign of currency is empty."
+            ));
+
+            return;
+        }
+
 
         Currency currency = new Currency(
-                0,
-                req.getParameter("code"),
-                req.getParameter("name"),
-                req.getParameter("sign")
+                code,
+                name,
+                sign
         );
 
-        currencyDAO.save(currency);
-        resp.sendRedirect(req.getContextPath() + "/currency/" + req.getParameter("code"));
+        try {
+            if (currencyDAO.getByCode(code).isPresent()) {
+                resp.setStatus(SC_CONFLICT);
+                objectMapper.writeValue(resp.getWriter(), new Error(
+                        SC_CONFLICT,
+                        "A currency with this code already exists."
+                ));
+
+                return;
+            }
+
+            int returnedID = currencyDAO.save(currency);
+            currency.setId(returnedID);
+
+            if (returnedID != -1) {
+                resp.setStatus(SC_CREATED);
+                objectMapper.writeValue(resp.getWriter(), currency);
+            }
+
+        } catch (SQLException e) {
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_INTERNAL_SERVER_ERROR,
+                    "The database is unavailable. Please try again later."
+            ));
+        }
     }
 }
