@@ -81,23 +81,21 @@ public class ExchangeRateDAO {
         }
     }
 
-    public ExchangeRate getByCode(ExchangeRate exchangeRate) {
+    public Optional<ExchangeRate> getByCode(String baseCurrencyCode, String targetCurrencyCode) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_BY_CODE_SQL)) {
 
-            statement.setString(1, exchangeRate.getBaseCurrency().getCode());
-            statement.setString(2, exchangeRate.getTargetCurrency().getCode());
+            statement.setString(1, baseCurrencyCode);
+            statement.setString(2, targetCurrencyCode);
 
             ResultSet resultSet = statement.executeQuery();
+            ExchangeRate exchangeRate = null;
 
             if (resultSet.next()) {
-                exchangeRate.setId(resultSet.getInt("id"));
-                exchangeRate.setRate(resultSet.getBigDecimal("rate"));
+                exchangeRate = createExchangeRate(resultSet);
             }
 
-            return exchangeRate;
-        } catch (SQLException e) {
-            throw new DAOException(e);
+            return Optional.ofNullable(exchangeRate);
         }
     }
 
@@ -123,7 +121,7 @@ public class ExchangeRateDAO {
         );
     }
 
-    public boolean update(ExchangeRate exchangeRate) {
+    public boolean update(ExchangeRate exchangeRate) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
 
@@ -132,8 +130,6 @@ public class ExchangeRateDAO {
             statement.setInt(3, exchangeRate.getTargetCurrency().getId());
 
             return statement.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new DAOException(e);
         }
     }
 

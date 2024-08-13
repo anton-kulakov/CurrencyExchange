@@ -22,7 +22,7 @@ public class CurrencyServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String currencyCode = req.getPathInfo().replaceAll("/", "");
 
-        if (currencyCode.isEmpty()) {
+        if (currencyCode.isEmpty() || currencyCode.isBlank()) {
             resp.setStatus(SC_BAD_REQUEST);
             objectMapper.writeValue(resp.getWriter(), new Error(
                     SC_BAD_REQUEST,
@@ -42,6 +42,7 @@ public class CurrencyServlet extends HttpServlet {
                         "The requested currency was not found."
                 ));
 
+                return;
             }
 
             objectMapper.writeValue(resp.getWriter(), currency.get());
