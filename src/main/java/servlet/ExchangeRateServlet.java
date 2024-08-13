@@ -113,6 +113,7 @@ public class ExchangeRateServlet extends HttpServlet {
             ));
         }
     }
+
     private boolean isCurrencyPairComplete(String currencyPair) {
         return !currencyPair.isBlank() && currencyPair.length() >= 6;
     }

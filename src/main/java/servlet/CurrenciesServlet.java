@@ -95,6 +95,7 @@ public class CurrenciesServlet extends HttpServlet {
             }
 
         } catch (SQLException e) {
+            resp.setStatus(SC_INTERNAL_SERVER_ERROR);
             objectMapper.writeValue(resp.getWriter(), new Error(
                     SC_INTERNAL_SERVER_ERROR,
                     "The database is unavailable. Please try again later."

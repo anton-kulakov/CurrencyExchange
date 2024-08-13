@@ -5,6 +5,7 @@ import model.Currency;
 import model.ExchangeRate;
 import utils.ConnectionManager;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 public class ExchangeRateDAO {
     private final static ExchangeRateDAO INSTANCE = new ExchangeRateDAO();
+    private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
     private final static String SAVE_SQL = """
             INSERT INTO ExchangeRates
             (BaseCurrencyID, TargetCurrencyID, Rate)
@@ -42,13 +44,19 @@ public class ExchangeRateDAO {
             WHERE bc.Code = ? AND tc.Code = ?
             """;
 
-    public ExchangeRate save(ExchangeRate exchangeRate) {
+    public ExchangeRate save(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
+            ExchangeRate exchangeRate = new ExchangeRate(
+                    currencyDAO.getByCode(baseCurrencyCode).get(),
+                    currencyDAO.getByCode(targetCurrencyCode).get(),
+                    rate
+            );
+
             statement.setInt(1, exchangeRate.getBaseCurrency().getId());
             statement.setInt(2, exchangeRate.getTargetCurrency().getId());
-            statement.setBigDecimal(3, exchangeRate.getRate());
+            statement.setBigDecimal(3, rate);
 
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
@@ -58,12 +66,10 @@ public class ExchangeRateDAO {
             }
 
             return exchangeRate;
-        } catch (SQLException e) {
-            throw new DAOException(e);
         }
     }
 
-    public List<ExchangeRate> getAll() {
+    public List<ExchangeRate> getAll() throws SQLException{
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_ALL_SQL)) {
             List<ExchangeRate> exchangeRates = new ArrayList<>();
@@ -76,8 +82,6 @@ public class ExchangeRateDAO {
             }
 
             return exchangeRates;
-        } catch (SQLException e) {
-            throw new DAOException(e);
         }
     }
 
