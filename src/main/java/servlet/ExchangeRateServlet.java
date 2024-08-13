@@ -1,44 +1,62 @@
 package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dao.CurrencyDAO;
 import dao.ExchangeRateDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import model.Error;
 import model.ExchangeRate;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.Optional;
+
+import static jakarta.servlet.http.HttpServletResponse.*;
 
 public class ExchangeRateServlet extends HttpServlet {
     private final ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
-    private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String pathInfo = req.getPathInfo();
-        String[] pathParts = pathInfo.split("/");
-        String currencyPair = pathParts[1];
+        String currencyPair = req.getPathInfo().replaceAll("/", "");
+
+        if (!isCurrencyPairComplete(currencyPair)) {
+            resp.setStatus(SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_BAD_REQUEST,
+                    "There is no code for one or two currencies."
+            ));
+
+            return;
+        }
+
         String baseCurrencyCode = currencyPair.substring(0, 3);
-        String targetCurrencyCode = currencyPair.substring(3);
+        String targetCurrencyCode = currencyPair.substring(3, 6);
 
-        ExchangeRate exchangeRate = exchangeRateDAO.getByCode(
-                new ExchangeRate(
-                        0,
-                        currencyDAO.getByCode(baseCurrencyCode).get(),
-                        currencyDAO.getByCode(targetCurrencyCode).get(),
-                        new BigDecimal(0)
-                )
-        );
+        try {
+            Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCode(baseCurrencyCode, targetCurrencyCode);
 
-        String jsonExchangeRate = objectMapper.writeValueAsString(exchangeRate);
-        resp.setStatus(200);
-        PrintWriter out = resp.getWriter();
-        out.write(jsonExchangeRate);
+            if (optionalExchangeRate.isEmpty()) {
+                resp.setStatus(SC_NOT_FOUND);
+                objectMapper.writeValue(resp.getWriter(), new Error(
+                        SC_NOT_FOUND,
+                        "The requested exchange rate was not found."
+                ));
+
+                return;
+            }
+
+            objectMapper.writeValue(resp.getWriter(), optionalExchangeRate.get());
+        } catch (SQLException e) {
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_INTERNAL_SERVER_ERROR,
+                    "The database is unavailable. Please try again later."
+            ));
+        }
     }
 
     @Override
@@ -53,21 +71,49 @@ public class ExchangeRateServlet extends HttpServlet {
     }
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String pathInfo = req.getPathInfo();
-        String[] pathParts = pathInfo.split("/");
-        String currencyPair = pathParts[1];
+        String currencyPair = req.getPathInfo().replaceAll("/", "");
+
+        if (!isCurrencyPairComplete(currencyPair)) {
+            resp.setStatus(SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_BAD_REQUEST,
+                    "There is no code for one or two currencies."
+            ));
+
+            return;
+        }
+
         String baseCurrencyCode = currencyPair.substring(0, 3);
         String targetCurrencyCode = currencyPair.substring(3, 6);
 
-        ExchangeRate exchangeRate = new ExchangeRate(
-                0,
-                currencyDAO.getByCode(baseCurrencyCode).get(),
-                currencyDAO.getByCode(targetCurrencyCode).get(),
-                new BigDecimal(req.getParameter("rate"))
-        );
+        try {
+            Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCode(baseCurrencyCode, targetCurrencyCode);
 
-        exchangeRateDAO.update(exchangeRate);
+            if (optionalExchangeRate.isEmpty()) {
+                resp.setStatus(SC_NOT_FOUND);
+                objectMapper.writeValue(resp.getWriter(), new Error(
+                        SC_NOT_FOUND,
+                        "The requested exchange rate was not found."
+                ));
 
-        doGet(req, resp);
+                return;
+            }
+
+            ExchangeRate exchangeRate = optionalExchangeRate.get();
+            exchangeRate.setRate(new BigDecimal(req.getParameter("rate")));
+
+            if (exchangeRateDAO.update(exchangeRate)) {
+                objectMapper.writeValue(resp.getWriter(), exchangeRate);
+            }
+
+        } catch (SQLException e) {
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_INTERNAL_SERVER_ERROR,
+                    "The database is unavailable. Please try again later."
+            ));
+        }
+    }
+    private boolean isCurrencyPairComplete(String currencyPair) {
+        return !currencyPair.isBlank() && currencyPair.length() >= 6;
     }
 }
