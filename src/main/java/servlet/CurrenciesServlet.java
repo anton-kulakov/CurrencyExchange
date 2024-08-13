@@ -68,13 +68,6 @@ public class CurrenciesServlet extends HttpServlet {
             return;
         }
 
-
-        Currency currency = new Currency(
-                code,
-                name,
-                sign
-        );
-
         try {
             if (currencyDAO.getByCode(code).isPresent()) {
                 resp.setStatus(SC_CONFLICT);
@@ -86,14 +79,9 @@ public class CurrenciesServlet extends HttpServlet {
                 return;
             }
 
-            int returnedID = currencyDAO.save(currency);
-            currency.setId(returnedID);
-
-            if (returnedID != -1) {
-                resp.setStatus(SC_CREATED);
-                objectMapper.writeValue(resp.getWriter(), currency);
-            }
-
+            Currency savedCurrency = currencyDAO.save(code, name, sign);
+            resp.setStatus(SC_CREATED);
+            objectMapper.writeValue(resp.getWriter(), savedCurrency);
         } catch (SQLException e) {
             resp.setStatus(SC_INTERNAL_SERVER_ERROR);
             objectMapper.writeValue(resp.getWriter(), new Error(

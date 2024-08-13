@@ -23,24 +23,24 @@ public class CurrencyDAO {
             WHERE Code = ?
              """;
 
-    public int save(Currency currency) throws SQLException {
+    public Currency save(String code, String name, String sign) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
-            statement.setString(1, currency.getCode());
-            statement.setString(2, currency.getFullName());
-            statement.setString(3, currency.getSign());
+            statement.setString(1, code);
+            statement.setString(2, name);
+            statement.setString(3, sign);
 
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
-            int id = -1;
+
+            Currency currency = new Currency(code, name, sign);
 
             if (generatedKeys.next()) {
-                id = generatedKeys.getInt(1);
-                currency.setId(id);
+                currency.setId(generatedKeys.getInt(1));
             }
 
-            return id;
+            return currency;
         }
     }
 
