@@ -1,6 +1,5 @@
 package dao;
 
-import exception.DAOException;
 import model.Currency;
 import model.ExchangeRate;
 import utils.ConnectionManager;
