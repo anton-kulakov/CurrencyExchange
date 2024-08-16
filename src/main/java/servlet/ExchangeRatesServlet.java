@@ -61,6 +61,16 @@ public class ExchangeRatesServlet extends HttpServlet {
             return;
         }
 
+        if (String.valueOf(rate).isEmpty() || String.valueOf(rate).isBlank()) {
+            resp.setStatus(SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_BAD_REQUEST,
+                    "The rate is empty."
+            ));
+
+            return;
+        }
+
         if (BigDecimal.ZERO.equals(rate)) {
             resp.setStatus(SC_BAD_REQUEST);
             objectMapper.writeValue(resp.getWriter(), new Error(
