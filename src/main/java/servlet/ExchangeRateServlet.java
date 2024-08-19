@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import model.Error;
 import model.ExchangeRate;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -72,6 +73,27 @@ public class ExchangeRateServlet extends HttpServlet {
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String currencyPair = req.getPathInfo().replaceAll("/", "");
+        Optional<BigDecimal> optionalRate = getOptionalRateParameter(req);
+
+        if (optionalRate.isEmpty()) {
+            resp.setStatus(SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_BAD_REQUEST,
+                    "The rate is empty."
+            ));
+
+            return;
+        }
+
+        if (BigDecimal.ZERO.equals(optionalRate.get())) {
+            resp.setStatus(SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), new Error(
+                    SC_BAD_REQUEST,
+                    "The rate equals zero."
+            ));
+
+            return;
+        }
 
         if (!isCurrencyPairComplete(currencyPair)) {
             resp.setStatus(SC_BAD_REQUEST);
@@ -93,14 +115,14 @@ public class ExchangeRateServlet extends HttpServlet {
                 resp.setStatus(SC_NOT_FOUND);
                 objectMapper.writeValue(resp.getWriter(), new Error(
                         SC_NOT_FOUND,
-                        "The requested exchange rate was not found."
+                        "The requested exchange stringRate was not found."
                 ));
 
                 return;
             }
 
             ExchangeRate exchangeRate = optionalExchangeRate.get();
-            exchangeRate.setRate(new BigDecimal(req.getParameter("rate")));
+            exchangeRate.setRate(optionalRate.get());
 
             if (exchangeRateDAO.update(exchangeRate)) {
                 objectMapper.writeValue(resp.getWriter(), exchangeRate);
@@ -112,6 +134,36 @@ public class ExchangeRateServlet extends HttpServlet {
                     "The database is unavailable. Please try again later."
             ));
         }
+    }
+
+    private static Optional<BigDecimal> getOptionalRateParameter(HttpServletRequest req) throws IOException {
+        String stringRate = "";
+        String line;
+        BigDecimal rate = null;
+
+        BufferedReader reader = req.getReader();
+        StringBuilder formBody = new StringBuilder();
+
+        while ((line = reader.readLine()) != null) {
+            formBody.append(line);
+        }
+
+        String[] params = formBody.toString().split("&");
+
+        for (String param : params) {
+
+            String[] keyValue = param.split("=");
+
+            if (keyValue[0].equals("rate")) {
+                stringRate = keyValue[1];
+            }
+        }
+
+        if (!stringRate.isEmpty() || !stringRate.isBlank()) {
+            rate = new BigDecimal(stringRate);
+        }
+
+        return Optional.ofNullable(rate);
     }
 
     private boolean isCurrencyPairComplete(String currencyPair) {
