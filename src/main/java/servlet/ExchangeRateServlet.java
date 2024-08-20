@@ -39,7 +39,7 @@ public class ExchangeRateServlet extends HttpServlet {
         String targetCurrencyCode = currencyPair.substring(3, 6);
 
         try {
-            Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCode(baseCurrencyCode, targetCurrencyCode);
+            Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCodes(baseCurrencyCode, targetCurrencyCode);
 
             if (optionalExchangeRate.isEmpty()) {
                 resp.setStatus(SC_NOT_FOUND);
@@ -109,7 +109,7 @@ public class ExchangeRateServlet extends HttpServlet {
         String targetCurrencyCode = currencyPair.substring(3, 6);
 
         try {
-            Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCode(baseCurrencyCode, targetCurrencyCode);
+            Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCodes(baseCurrencyCode, targetCurrencyCode);
 
             if (optionalExchangeRate.isEmpty()) {
                 resp.setStatus(SC_NOT_FOUND);

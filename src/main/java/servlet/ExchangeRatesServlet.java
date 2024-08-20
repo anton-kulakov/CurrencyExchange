@@ -92,7 +92,7 @@ public class ExchangeRatesServlet extends HttpServlet {
                 return;
             }
 
-            if (exchangeRateDAO.getByCode(baseCurrencyCode, targetCurrencyCode).isPresent()) {
+            if (exchangeRateDAO.getByCodes(baseCurrencyCode, targetCurrencyCode).isPresent()) {
                 resp.setStatus(SC_CONFLICT);
                 objectMapper.writeValue(resp.getWriter(), new Error(
                         SC_CONFLICT,

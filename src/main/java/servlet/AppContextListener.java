@@ -2,7 +2,6 @@ package servlet;
 
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.ServletException;
 
 public class AppContextListener implements ServletContextListener {
     @Override

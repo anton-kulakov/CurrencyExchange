@@ -48,7 +48,7 @@
     </listener>
     <filter>
         <filter-name>EncodingFilter</filter-name>
-        <filter-class>servlet.EncodingFilter</filter-class>
+        <filter-class>servlet.filter.EncodingFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>EncodingFilter</filter-name>
@@ -56,7 +56,7 @@
     </filter-mapping>
     <filter>
         <filter-name>CORSFilter</filter-name>
-        <filter-class>servlet.CORSFilter</filter-class>
+        <filter-class>servlet.filter.CORSFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>CORSFilter</filter-name>
