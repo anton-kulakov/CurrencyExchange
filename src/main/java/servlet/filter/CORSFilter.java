@@ -1,7 +1,6 @@
 package servlet.filter;
 
 import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;

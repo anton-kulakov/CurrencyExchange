@@ -12,15 +12,15 @@ public class CurrencyDAO {
     private final static CurrencyDAO INSTANCE = new CurrencyDAO();
     private final static String SAVE_SQL = """
             INSERT INTO currencies
-            (Code, FullName, Sign) 
+            (code, full_name, sign) 
             VALUES (?, ?, ?)
              """;
     private final static String GET_ALL_SQL = """
-            SELECT id, code, fullname, sign 
+            SELECT id, code, full_name, sign 
             FROM currencies
              """;
     private final static String GET_BY_CODE_SQL = GET_ALL_SQL + """
-            WHERE Code = ?
+            WHERE code = ?
              """;
 
     public Currency save(String code, String name, String sign) throws SQLException {
@@ -82,7 +82,7 @@ public class CurrencyDAO {
         return new Currency(
                 resultSet.getInt("id"),
                 resultSet.getString("code"),
-                resultSet.getString("fullname"),
+                resultSet.getString("full_name"),
                 resultSet.getString("sign")
         );
     }

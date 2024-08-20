@@ -15,32 +15,32 @@ public class ExchangeRateDAO {
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
     private final static String SAVE_SQL = """
             INSERT INTO exchange_rates
-            (BaseCurrencyID, TargetCurrencyID, Rate)
+            (base_currency_id, target_currency_id, rate)
             VALUES (?, ?, ?)
             """;
     private final static String GET_ALL_SQL = """
             SELECT
             er.id,
-            bc.id AS BaseCurrencyID,
-            bc.code AS BaseCurrencyCode,
-            bc.fullname AS BaseCurrencyFullName,
-            bc.sign AS BaseCurrencySign,
-            tc.id AS TargetCurrencyID,
-            tc.code AS TargetCurrencyCode,
-            tc.fullname AS TargetCurrencyFullName,
-            tc.sign AS TargetCurrencySign,
+            bc.id AS base_currency_id,
+            bc.code AS base_currency_code,
+            bc.full_name AS base_currency_full_name,
+            bc.sign AS base_currency_sign,
+            tc.id AS target_currency_id,
+            tc.code AS target_currency_code,
+            tc.full_name AS target_currency_full_name,
+            tc.sign AS target_currency_sign,
             er.rate
             FROM exchange_rates er
-            INNER JOIN currencies bc ON er.BaseCurrencyId = bc.id
-            INNER JOIN currencies tc ON er.TargetCurrencyId = tc.id
+            INNER JOIN currencies bc ON er.base_currency_id = bc.id
+            INNER JOIN currencies tc ON er.target_currency_id = tc.id
             """;
     private final static String UPDATE_SQL = """
             UPDATE exchange_rates
-            SET Rate = ? 
-            WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?
+            SET rate = ? 
+            WHERE base_currency_id = ? AND target_currency_id = ?
             """;
     private final static String GET_BY_CODE_SQL = GET_ALL_SQL + """
-            WHERE bc.Code = ? AND tc.Code = ?
+            WHERE bc.code = ? AND tc.code = ?
             """;
 
     public ExchangeRate save(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) throws SQLException {
@@ -105,16 +105,16 @@ public class ExchangeRateDAO {
 
     private ExchangeRate createExchangeRate(ResultSet resultSet) throws SQLException {
         Currency baseCurrency = new Currency(
-                resultSet.getInt("BaseCurrencyID"),
-                resultSet.getString("BaseCurrencyCode"),
-                resultSet.getString("BaseCurrencyFullName"),
-                resultSet.getString("BaseCurrencySign")
+                resultSet.getInt("base_currency_id"),
+                resultSet.getString("base_currency_code"),
+                resultSet.getString("base_currency_full_name"),
+                resultSet.getString("base_currency_sign")
         );
         Currency targetCurrency = new Currency(
-                resultSet.getInt("TargetCurrencyID"),
-                resultSet.getString("TargetCurrencyCode"),
-                resultSet.getString("TargetCurrencyFullName"),
-                resultSet.getString("TargetCurrencySign")
+                resultSet.getInt("target_currency_id"),
+                resultSet.getString("target_currency_code"),
+                resultSet.getString("target_currency_full_name"),
+                resultSet.getString("target_currency_sign")
         );
 
         return new ExchangeRate(
