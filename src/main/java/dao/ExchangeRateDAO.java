@@ -14,7 +14,7 @@ public class ExchangeRateDAO {
     private final static ExchangeRateDAO INSTANCE = new ExchangeRateDAO();
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
     private final static String SAVE_SQL = """
-            INSERT INTO ExchangeRates
+            INSERT INTO exchange_rates
             (BaseCurrencyID, TargetCurrencyID, Rate)
             VALUES (?, ?, ?)
             """;
@@ -30,12 +30,12 @@ public class ExchangeRateDAO {
             tc.fullname AS TargetCurrencyFullName,
             tc.sign AS TargetCurrencySign,
             er.rate
-            FROM ExchangeRates er
-            INNER JOIN Currencies bc ON er.BaseCurrencyId = bc.id
-            INNER JOIN Currencies tc ON er.TargetCurrencyId = tc.id
+            FROM exchange_rates er
+            INNER JOIN currencies bc ON er.BaseCurrencyId = bc.id
+            INNER JOIN currencies tc ON er.TargetCurrencyId = tc.id
             """;
     private final static String UPDATE_SQL = """
-            UPDATE ExchangeRates
+            UPDATE exchange_rates
             SET Rate = ? 
             WHERE BaseCurrencyId = ? AND TargetCurrencyId = ?
             """;
