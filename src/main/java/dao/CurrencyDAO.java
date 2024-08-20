@@ -11,13 +11,13 @@ import java.util.Optional;
 public class CurrencyDAO {
     private final static CurrencyDAO INSTANCE = new CurrencyDAO();
     private final static String SAVE_SQL = """
-            INSERT INTO Currencies
+            INSERT INTO currencies
             (Code, FullName, Sign) 
             VALUES (?, ?, ?)
              """;
     private final static String GET_ALL_SQL = """
             SELECT id, code, fullname, sign 
-            FROM Currencies
+            FROM currencies
              """;
     private final static String GET_BY_CODE_SQL = GET_ALL_SQL + """
             WHERE Code = ?
