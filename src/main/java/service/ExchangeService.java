@@ -26,7 +26,7 @@ public class ExchangeService {
                     currencyDAO.getByCode(to).get(),
                     rate,
                     amount,
-                    amount.multiply(rate)
+                    amount.multiply(rate).setScale(2, RoundingMode.HALF_UP)
             );
         }
 
@@ -48,11 +48,11 @@ public class ExchangeService {
     }
 
     private Optional<ExchangeRate> getDirectExchangeRate(String from, String to) throws SQLException {
-        return exchangeRateDAO.getByCode(from, to);
+        return exchangeRateDAO.getByCodes(from, to);
     }
 
     private Optional<ExchangeRate> getReversedExchangeRate(String from, String to) throws SQLException {
-        Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCode(to, from);
+        Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCodes(to, from);
         ExchangeRate newOptionalExchangeRate = null;
 
         if (optionalExchangeRate.isPresent()) {
@@ -66,8 +66,8 @@ public class ExchangeService {
     }
 
     private Optional<ExchangeRate> getCrossExchangeRate(String from, String to) throws SQLException {
-        Optional<ExchangeRate> optionalExchangeRateUSDFrom = exchangeRateDAO.getByCode("USD", from);
-        Optional<ExchangeRate> optionalExchangeRateUSDTo = exchangeRateDAO.getByCode("USD", to);
+        Optional<ExchangeRate> optionalExchangeRateUSDFrom = exchangeRateDAO.getByCodes("USD", from);
+        Optional<ExchangeRate> optionalExchangeRateUSDTo = exchangeRateDAO.getByCodes("USD", to);
         ExchangeRate exchangeRate = null;
 
         if (optionalExchangeRateUSDFrom.isPresent() && optionalExchangeRateUSDTo.isPresent()) {
