@@ -6,7 +6,7 @@ import utils.ConnectionManager;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,7 +71,8 @@ public class ExchangeRateDAO {
     public List<ExchangeRate> getAll() throws SQLException{
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_ALL_SQL)) {
-            List<ExchangeRate> exchangeRates = new ArrayList<>();
+
+            List<ExchangeRate> exchangeRates = new LinkedList<>();
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -84,7 +85,7 @@ public class ExchangeRateDAO {
         }
     }
 
-    public Optional<ExchangeRate> getByCode(String baseCurrencyCode, String targetCurrencyCode) throws SQLException {
+    public Optional<ExchangeRate> getByCodes(String baseCurrencyCode, String targetCurrencyCode) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_BY_CODE_SQL)) {
 

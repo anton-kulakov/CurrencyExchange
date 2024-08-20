@@ -4,7 +4,7 @@ import model.Currency;
 import utils.ConnectionManager;
 
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,7 +47,8 @@ public class CurrencyDAO {
     public List<Currency> getAll() throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_ALL_SQL)) {
-            List<Currency> currencies = new ArrayList<>();
+
+            List<Currency> currencies = new LinkedList<>();
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
