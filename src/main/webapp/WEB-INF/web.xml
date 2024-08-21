@@ -5,7 +5,7 @@
          version="5.0">
     <servlet>
         <servlet-name>CurrenciesServlet</servlet-name>
-        <servlet-class>servlet.CurrenciesServlet</servlet-class>
+        <servlet-class>controller.CurrenciesController</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>CurrenciesServlet</servlet-name>
@@ -13,7 +13,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>CurrencyServlet</servlet-name>
-        <servlet-class>servlet.CurrencyServlet</servlet-class>
+        <servlet-class>controller.CurrencyController</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>CurrencyServlet</servlet-name>
@@ -21,7 +21,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>ExchangeRatesServlet</servlet-name>
-        <servlet-class>servlet.ExchangeRatesServlet</servlet-class>
+        <servlet-class>controller.ExchangeRatesController</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ExchangeRatesServlet</servlet-name>
@@ -29,7 +29,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>ExchangeRateServlet</servlet-name>
-        <servlet-class>servlet.ExchangeRateServlet</servlet-class>
+        <servlet-class>controller.ExchangeRateController</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ExchangeRateServlet</servlet-name>
@@ -37,18 +37,18 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>ExchangeServlet</servlet-name>
-        <servlet-class>servlet.ExchangeServlet</servlet-class>
+        <servlet-class>controller.ExchangeController</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ExchangeServlet</servlet-name>
         <url-pattern>/exchange/*</url-pattern>
     </servlet-mapping>
     <listener>
-        <listener-class>servlet.AppContextListener</listener-class>
+        <listener-class>controller.AppContextListener</listener-class>
     </listener>
     <filter>
         <filter-name>EncodingFilter</filter-name>
-        <filter-class>servlet.filter.EncodingFilter</filter-class>
+        <filter-class>controller.filter.EncodingFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>EncodingFilter</filter-name>
@@ -56,7 +56,7 @@
     </filter-mapping>
     <filter>
         <filter-name>CORSFilter</filter-name>
-        <filter-class>servlet.filter.CORSFilter</filter-class>
+        <filter-class>controller.filter.CORSFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>CORSFilter</filter-name>

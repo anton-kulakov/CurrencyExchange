@@ -1,4 +1,4 @@
-package servlet;
+package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.ExchangeRateDAO;
@@ -17,7 +17,7 @@ import java.util.Optional;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
 
-public class ExchangeRateServlet extends HttpServlet {
+public class ExchangeRateController extends HttpServlet {
     private final ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
 

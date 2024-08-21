@@ -1,4 +1,4 @@
-package servlet;
+package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
@@ -14,7 +14,7 @@ import java.util.List;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
 
-public class CurrenciesServlet extends HttpServlet {
+public class CurrenciesController extends HttpServlet {
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
 

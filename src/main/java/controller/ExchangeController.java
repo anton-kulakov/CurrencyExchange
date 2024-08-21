@@ -1,4 +1,4 @@
-package servlet;
+package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServlet;
@@ -15,7 +15,7 @@ import java.util.Optional;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
 
-public class ExchangeServlet extends HttpServlet {
+public class ExchangeController extends HttpServlet {
     private final ExchangeService exchangeService = new ExchangeService();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
