@@ -74,8 +74,14 @@ public class ExchangeService {
             BigDecimal rate = optionalExchangeRateUSDTo.get().getRate().divide(
                     optionalExchangeRateUSDFrom.get().getRate(),
                     6,
-                    RoundingMode.HALF_UP);
-            exchangeRate = exchangeRateDAO.save(from, to, rate);
+                    RoundingMode.HALF_UP
+            );
+
+            exchangeRate = new ExchangeRate(
+                    currencyDAO.getByCode(from).get(),
+                    currencyDAO.getByCode(to).get(),
+                    rate
+            );
         }
 
         return Optional.ofNullable(exchangeRate);
