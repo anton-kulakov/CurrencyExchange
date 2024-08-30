@@ -1,11 +1,12 @@
 package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dto.ExchangeReqDTO;
+import dto.ExchangeRespDTO;
+import dto.Error;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.Error;
-import model.Exchange;
 import service.ExchangeService;
 
 import java.io.IOException;
@@ -24,6 +25,8 @@ public class ExchangeController extends HttpServlet {
         String from = req.getParameter("from");
         String to = req.getParameter("to");
         BigDecimal amount = new BigDecimal(req.getParameter("amount"));
+
+        ExchangeReqDTO exchangeReqDTO = new ExchangeReqDTO(from, to, amount);
 
         if (from.isEmpty() || from.isBlank()) {
             resp.setStatus(SC_BAD_REQUEST);
@@ -58,7 +61,7 @@ public class ExchangeController extends HttpServlet {
         }
 
         try {
-            Optional<Exchange> exchange = exchangeService.makeExchange(from, to, amount);
+            Optional<ExchangeRespDTO> exchange = exchangeService.makeExchange(exchangeReqDTO);
 
             if (exchange.isPresent()) {
                 objectMapper.writeValue(resp.getWriter(), exchange.get());

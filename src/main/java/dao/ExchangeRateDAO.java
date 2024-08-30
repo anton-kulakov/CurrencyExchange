@@ -1,7 +1,11 @@
 package dao;
 
-import model.Currency;
-import model.ExchangeRate;
+import dto.CurrencyDTO;
+import dto.ExchangeRateReqDTO;
+import dto.ExchangeRateRespDTO;
+import entity.Currency;
+import entity.ExchangeRate;
+import org.modelmapper.ModelMapper;
 import utils.ConnectionManager;
 
 import java.math.BigDecimal;
@@ -9,10 +13,12 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ExchangeRateDAO {
     private final static ExchangeRateDAO INSTANCE = new ExchangeRateDAO();
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
+    private final ModelMapper modelMapper = new ModelMapper();
     private final static String SAVE_SQL = """
             INSERT INTO exchange_rates
             (base_currency_id, target_currency_id, rate)
@@ -36,39 +42,54 @@ public class ExchangeRateDAO {
             """;
     private final static String UPDATE_SQL = """
             UPDATE exchange_rates
-            SET rate = ? 
+            SET rate = ?
             WHERE base_currency_id = ? AND target_currency_id = ?
             """;
     private final static String GET_BY_CODE_SQL = GET_ALL_SQL + """
             WHERE bc.code = ? AND tc.code = ?
             """;
 
-    public ExchangeRate save(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) throws SQLException {
+    public Optional<ExchangeRateRespDTO> save(ExchangeRateReqDTO exRateReqDTO) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
-            ExchangeRate exchangeRate = new ExchangeRate(
-                    currencyDAO.getByCode(baseCurrencyCode).get(),
-                    currencyDAO.getByCode(targetCurrencyCode).get(),
-                    rate
-            );
+            CurrencyDTO baseCurrencyDTO = new CurrencyDTO();
+            CurrencyDTO targetCurrencyDTO = new CurrencyDTO();
+            baseCurrencyDTO.setCode(exRateReqDTO.getBaseCurrencyCode());
+            targetCurrencyDTO.setCode(exRateReqDTO.getTargetCurrencyCode());
 
-            statement.setInt(1, exchangeRate.getBaseCurrency().getId());
-            statement.setInt(2, exchangeRate.getTargetCurrency().getId());
+            Currency baseCurrency = modelMapper.map(currencyDAO.getByCode(baseCurrencyDTO).get(), Currency.class);
+            Currency targetCurrency = modelMapper.map(currencyDAO.getByCode(targetCurrencyDTO).get(), Currency.class);
+            BigDecimal rate = exRateReqDTO.getRate();
+
+            statement.setInt(1, baseCurrency.getId());
+            statement.setInt(2, targetCurrency.getId());
             statement.setBigDecimal(3, rate);
 
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
 
+            ExchangeRate exchangeRate = null;
+            ExchangeRateRespDTO exRateRespDTO = null;
+
             if (generatedKeys.next()) {
-                exchangeRate.setId(generatedKeys.getInt(1));
+                exchangeRate = new ExchangeRate(
+                        generatedKeys.getInt(1),
+                        baseCurrency,
+                        targetCurrency,
+                        rate
+                );
             }
 
-            return exchangeRate;
+            if (exchangeRate != null) {
+                exRateRespDTO = modelMapper.map(exchangeRate, ExchangeRateRespDTO.class);
+            }
+
+            return Optional.ofNullable(exRateRespDTO);
         }
     }
 
-    public List<ExchangeRate> getAll() throws SQLException{
+    public List<ExchangeRateRespDTO> getAll() throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_ALL_SQL)) {
 
@@ -81,25 +102,33 @@ public class ExchangeRateDAO {
                 );
             }
 
-            return exchangeRates;
+            return exchangeRates.stream()
+                    .map(exchangeRate -> modelMapper.map(exchangeRate, ExchangeRateRespDTO.class))
+                    .collect(Collectors.toList());
         }
     }
 
-    public Optional<ExchangeRate> getByCodes(String baseCurrencyCode, String targetCurrencyCode) throws SQLException {
+    public Optional<ExchangeRateRespDTO> getByCodes(ExchangeRateReqDTO exRateReqDTO) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_BY_CODE_SQL)) {
 
-            statement.setString(1, baseCurrencyCode);
-            statement.setString(2, targetCurrencyCode);
+            statement.setString(1, exRateReqDTO.getBaseCurrencyCode());
+            statement.setString(2, exRateReqDTO.getTargetCurrencyCode());
 
             ResultSet resultSet = statement.executeQuery();
+
             ExchangeRate exchangeRate = null;
+            ExchangeRateRespDTO exRateRespDTO = null;
 
             if (resultSet.next()) {
                 exchangeRate = createExchangeRate(resultSet);
             }
 
-            return Optional.ofNullable(exchangeRate);
+            if (exchangeRate != null) {
+                exRateRespDTO = modelMapper.map(exchangeRate, ExchangeRateRespDTO.class);
+            }
+
+            return Optional.ofNullable(exRateRespDTO);
         }
     }
 
@@ -125,13 +154,13 @@ public class ExchangeRateDAO {
         );
     }
 
-    public boolean update(ExchangeRate exchangeRate) throws SQLException {
+    public boolean update(ExchangeRateRespDTO exRateRespDTO) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
 
-            statement.setBigDecimal(1, exchangeRate.getRate());
-            statement.setInt(2, exchangeRate.getBaseCurrency().getId());
-            statement.setInt(3, exchangeRate.getTargetCurrency().getId());
+            statement.setBigDecimal(1, exRateRespDTO.getRate());
+            statement.setInt(2, exRateRespDTO.getBaseCurrency().getId());
+            statement.setInt(3, exRateRespDTO.getTargetCurrency().getId());
 
             return statement.executeUpdate() > 0;
         }

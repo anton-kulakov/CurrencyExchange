@@ -2,12 +2,13 @@ package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.ExchangeRateDAO;
+import dto.ExchangeRateReqDTO;
+import dto.ExchangeRateRespDTO;
+import dto.Error;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.Error;
-import model.ExchangeRate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,10 +39,14 @@ public class ExchangeRateController extends HttpServlet {
         String baseCurrencyCode = currencyPair.substring(0, 3);
         String targetCurrencyCode = currencyPair.substring(3, 6);
 
-        try {
-            Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCodes(baseCurrencyCode, targetCurrencyCode);
+        ExchangeRateReqDTO exchangeRateReqDTO = new ExchangeRateReqDTO();
+        exchangeRateReqDTO.setBaseCurrencyCode(baseCurrencyCode);
+        exchangeRateReqDTO.setTargetCurrencyCode(targetCurrencyCode);
 
-            if (optionalExchangeRate.isEmpty()) {
+        try {
+            Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exchangeRateReqDTO);
+
+            if (optionalExRateRespDTO.isEmpty()) {
                 resp.setStatus(SC_NOT_FOUND);
                 objectMapper.writeValue(resp.getWriter(), new Error(
                         SC_NOT_FOUND,
@@ -51,7 +56,7 @@ public class ExchangeRateController extends HttpServlet {
                 return;
             }
 
-            objectMapper.writeValue(resp.getWriter(), optionalExchangeRate.get());
+            objectMapper.writeValue(resp.getWriter(), optionalExRateRespDTO.get());
         } catch (SQLException e) {
             objectMapper.writeValue(resp.getWriter(), new Error(
                     SC_INTERNAL_SERVER_ERROR,
@@ -73,6 +78,7 @@ public class ExchangeRateController extends HttpServlet {
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String currencyPair = req.getPathInfo().replaceAll("/", "");
+
         Optional<BigDecimal> optionalRate = getOptionalRateParameter(req);
 
         if (optionalRate.isEmpty()) {
@@ -107,25 +113,30 @@ public class ExchangeRateController extends HttpServlet {
 
         String baseCurrencyCode = currencyPair.substring(0, 3);
         String targetCurrencyCode = currencyPair.substring(3, 6);
+        ExchangeRateReqDTO exRateReqDTO = new ExchangeRateReqDTO();
+
+        exRateReqDTO.setBaseCurrencyCode(baseCurrencyCode);
+        exRateReqDTO.setTargetCurrencyCode(targetCurrencyCode);
 
         try {
-            Optional<ExchangeRate> optionalExchangeRate = exchangeRateDAO.getByCodes(baseCurrencyCode, targetCurrencyCode);
 
-            if (optionalExchangeRate.isEmpty()) {
+            Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
+
+            if (optionalExRateRespDTO.isEmpty()) {
                 resp.setStatus(SC_NOT_FOUND);
                 objectMapper.writeValue(resp.getWriter(), new Error(
                         SC_NOT_FOUND,
-                        "The requested exchange stringRate was not found."
+                        "The requested exchange rate was not found."
                 ));
 
                 return;
             }
 
-            ExchangeRate exchangeRate = optionalExchangeRate.get();
-            exchangeRate.setRate(optionalRate.get());
+            ExchangeRateRespDTO exRateRespDTO = optionalExRateRespDTO.get();
+            exRateRespDTO.setRate(optionalRate.get());
 
-            if (exchangeRateDAO.update(exchangeRate)) {
-                objectMapper.writeValue(resp.getWriter(), exchangeRate);
+            if (exchangeRateDAO.update(exRateRespDTO)) {
+                objectMapper.writeValue(resp.getWriter(), exRateRespDTO);
             }
 
         } catch (SQLException e) {

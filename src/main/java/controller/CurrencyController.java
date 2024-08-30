@@ -2,11 +2,11 @@ package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
+import dto.CurrencyDTO;
+import dto.Error;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.Currency;
-import model.Error;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -21,6 +21,8 @@ public class CurrencyController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String currencyCode = req.getPathInfo().replaceAll("/", "");
+        CurrencyDTO currencyReqDTO = new CurrencyDTO();
+        currencyReqDTO.setCode(currencyCode);
 
         if (currencyCode.isEmpty() || currencyCode.isBlank()) {
             resp.setStatus(SC_BAD_REQUEST);
@@ -33,9 +35,9 @@ public class CurrencyController extends HttpServlet {
         }
 
         try {
-            Optional<Currency> currency = currencyDAO.getByCode(currencyCode);
+            Optional<CurrencyDTO> currencyDTO = currencyDAO.getByCode(currencyReqDTO);
 
-            if (currency.isEmpty()) {
+            if (currencyDTO.isEmpty()) {
                 resp.setStatus(SC_NOT_FOUND);
                 objectMapper.writeValue(resp.getWriter(), new Error(
                         SC_NOT_FOUND,
@@ -45,7 +47,7 @@ public class CurrencyController extends HttpServlet {
                 return;
             }
 
-            objectMapper.writeValue(resp.getWriter(), currency.get());
+            objectMapper.writeValue(resp.getWriter(), currencyDTO.get());
         } catch (SQLException e) {
             objectMapper.writeValue(resp.getWriter(), new Error(
                     SC_INTERNAL_SERVER_ERROR,

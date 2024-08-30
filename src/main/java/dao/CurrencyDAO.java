@@ -1,15 +1,19 @@
 package dao;
 
-import model.Currency;
+import dto.CurrencyDTO;
+import entity.Currency;
+import org.modelmapper.ModelMapper;
 import utils.ConnectionManager;
 
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CurrencyDAO {
     private final static CurrencyDAO INSTANCE = new CurrencyDAO();
+    private final ModelMapper modelMapper = new ModelMapper();
     private final static String SAVE_SQL = """
             INSERT INTO currencies
             (code, full_name, sign) 
@@ -23,9 +27,13 @@ public class CurrencyDAO {
             WHERE code = ?
              """;
 
-    public Currency save(String code, String name, String sign) throws SQLException {
+    public Optional<CurrencyDTO> save(CurrencyDTO currencyDTO) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+
+            String code = currencyDTO.getCode();
+            String name = currencyDTO.getName();
+            String sign = currencyDTO.getSign();
 
             statement.setString(1, code);
             statement.setString(2, name);
@@ -34,17 +42,27 @@ public class CurrencyDAO {
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
 
-            Currency currency = new Currency(code, name, sign);
+            Currency currency = null;
+            CurrencyDTO currencyRespDTO = null;
 
             if (generatedKeys.next()) {
-                currency.setId(generatedKeys.getInt(1));
+                currency = new Currency(
+                        generatedKeys.getInt(1),
+                        code,
+                        name,
+                        sign
+                );
             }
 
-            return currency;
+            if (currency != null) {
+                currencyRespDTO = modelMapper.map(currency, CurrencyDTO.class);
+            }
+
+            return Optional.ofNullable(currencyRespDTO);
         }
     }
 
-    public List<Currency> getAll() throws SQLException {
+    public List<CurrencyDTO> getAll() throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_ALL_SQL)) {
 
@@ -57,24 +75,31 @@ public class CurrencyDAO {
                 );
             }
 
-            return currencies;
+            return currencies.stream()
+                    .map(currency -> modelMapper.map(currency, CurrencyDTO.class))
+                    .collect(Collectors.toList());
         }
     }
 
-    public Optional<Currency> getByCode(String code) throws SQLException {
+    public Optional<CurrencyDTO> getByCode(CurrencyDTO currencyDTO) throws SQLException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_BY_CODE_SQL)) {
 
-            statement.setString(1, code);
+            statement.setString(1, currencyDTO.getCode());
 
             ResultSet resultSet = statement.executeQuery();
             Currency currency = null;
+            CurrencyDTO currencyRespDTO = null;
 
             if (resultSet.next()) {
                 currency = createCurrency(resultSet);
             }
 
-            return Optional.ofNullable(currency);
+            if (currency != null) {
+                currencyRespDTO = modelMapper.map(currency, CurrencyDTO.class);
+            }
+
+            return Optional.ofNullable(currencyRespDTO);
         }
     }
 

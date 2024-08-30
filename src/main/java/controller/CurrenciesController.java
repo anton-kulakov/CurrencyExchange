@@ -2,15 +2,16 @@ package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
+import dto.CurrencyDTO;
+import dto.Error;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.Currency;
-import model.Error;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
 
@@ -21,7 +22,7 @@ public class CurrenciesController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            List<Currency> currencies = currencyDAO.getAll();
+            List<CurrencyDTO> currencies = currencyDAO.getAll();
             objectMapper.writeValue(resp.getWriter(), currencies);
         } catch (SQLException e) {
             resp.setStatus(SC_INTERNAL_SERVER_ERROR);
@@ -37,6 +38,8 @@ public class CurrenciesController extends HttpServlet {
         String code = req.getParameter("code");
         String name = req.getParameter("name");
         String sign = req.getParameter("sign");
+
+        CurrencyDTO currencyReqDTO = new CurrencyDTO(code, name, sign);
 
         if (code.isEmpty() || code.isBlank()) {
             resp.setStatus(SC_BAD_REQUEST);
@@ -69,7 +72,7 @@ public class CurrenciesController extends HttpServlet {
         }
 
         try {
-            if (currencyDAO.getByCode(code).isPresent()) {
+            if (currencyDAO.getByCode(currencyReqDTO).isPresent()) {
                 resp.setStatus(SC_CONFLICT);
                 objectMapper.writeValue(resp.getWriter(), new Error(
                         SC_CONFLICT,
@@ -79,9 +82,9 @@ public class CurrenciesController extends HttpServlet {
                 return;
             }
 
-            Currency savedCurrency = currencyDAO.save(code, name, sign);
+            Optional<CurrencyDTO> currencyDTO = currencyDAO.save(currencyReqDTO);
             resp.setStatus(SC_CREATED);
-            objectMapper.writeValue(resp.getWriter(), savedCurrency);
+            objectMapper.writeValue(resp.getWriter(), currencyDTO.get());
         } catch (SQLException e) {
             resp.setStatus(SC_INTERNAL_SERVER_ERROR);
             objectMapper.writeValue(resp.getWriter(), new Error(
