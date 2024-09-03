@@ -4,43 +4,43 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
     <servlet>
-        <servlet-name>CurrenciesServlet</servlet-name>
+        <servlet-name>CurrenciesController</servlet-name>
         <servlet-class>controller.CurrenciesController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>CurrenciesServlet</servlet-name>
+        <servlet-name>CurrenciesController</servlet-name>
         <url-pattern>/currencies/*</url-pattern>
     </servlet-mapping>
     <servlet>
-        <servlet-name>CurrencyServlet</servlet-name>
+        <servlet-name>CurrencyController</servlet-name>
         <servlet-class>controller.CurrencyController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>CurrencyServlet</servlet-name>
+        <servlet-name>CurrencyController</servlet-name>
         <url-pattern>/currency/*</url-pattern>
     </servlet-mapping>
     <servlet>
-        <servlet-name>ExchangeRatesServlet</servlet-name>
+        <servlet-name>ExchangeRatesController</servlet-name>
         <servlet-class>controller.ExchangeRatesController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ExchangeRatesServlet</servlet-name>
+        <servlet-name>ExchangeRatesController</servlet-name>
         <url-pattern>/exchangeRates/*</url-pattern>
     </servlet-mapping>
     <servlet>
-        <servlet-name>ExchangeRateServlet</servlet-name>
+        <servlet-name>ExchangeRateController</servlet-name>
         <servlet-class>controller.ExchangeRateController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ExchangeRateServlet</servlet-name>
+        <servlet-name>ExchangeRateController</servlet-name>
         <url-pattern>/exchangeRate/*</url-pattern>
     </servlet-mapping>
     <servlet>
-        <servlet-name>ExchangeServlet</servlet-name>
+        <servlet-name>ExchangeController</servlet-name>
         <servlet-class>controller.ExchangeController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ExchangeServlet</servlet-name>
+        <servlet-name>ExchangeController</servlet-name>
         <url-pattern>/exchange/*</url-pattern>
     </servlet-mapping>
     <listener>
