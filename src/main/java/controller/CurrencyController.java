@@ -1,6 +1,5 @@
 package controller;
 
-import dao.CurrencyDAO;
 import dto.CurrencyDTO;
 import dto.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,8 +12,6 @@ import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
 public class CurrencyController extends AbstractMainController {
-    private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
-
     @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         String currencyCode = req.getPathInfo().replaceAll("/", "");

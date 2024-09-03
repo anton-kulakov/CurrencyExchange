@@ -1,6 +1,8 @@
 package controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dao.CurrencyDAO;
+import dao.ExchangeRateDAO;
 import dto.RestErrorException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -12,11 +14,16 @@ import java.sql.SQLException;
 
 public abstract class AbstractMainController extends HttpServlet {
     protected ObjectMapper objectMapper;
+    protected CurrencyDAO currencyDAO;
+    protected ExchangeRateDAO exchangeRateDAO;
+
     public void init() throws ServletException {
         super.init();
         objectMapper = new ObjectMapper();
+        currencyDAO = CurrencyDAO.getInstance();
+        exchangeRateDAO = ExchangeRateDAO.getInstance();
     }
-    // этот doGet() Сергей написал для примера. Остальные методы можно писать в соответствии с ним
+
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         try {
             handleGet(req, resp);
@@ -38,5 +45,6 @@ public abstract class AbstractMainController extends HttpServlet {
             e.printStackTrace();
         }
     }
+
     abstract protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception;
 }
