@@ -18,7 +18,7 @@ public class CurrencyController extends AbstractMainController {
         CurrencyDTO currencyReqDTO = new CurrencyDTO();
         currencyReqDTO.setCode(currencyCode);
 
-        if (!isCurrencyCodeValid2(currencyReqDTO)) {
+        if (!currencyReqDTO.getCode().isBlank() && isCurrencyCodeValid(currencyReqDTO.getCode())) {
             throw new RestErrorException(
                     SC_BAD_REQUEST,
                     "Currency code is invalid"
@@ -37,9 +37,8 @@ public class CurrencyController extends AbstractMainController {
         objectMapper.writeValue(resp.getWriter(), currencyDTO.get());
     }
 
-    private boolean isCurrencyCodeValid2(CurrencyDTO currencyReqDTO) {
-        return !currencyReqDTO.getCode().isEmpty() ||
-               !currencyReqDTO.getCode().isBlank() ||
-               !isCurrencyCodeValid(currencyReqDTO.getCode());
+    @Override
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
     }
 }
