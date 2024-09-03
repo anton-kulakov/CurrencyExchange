@@ -1,58 +1,48 @@
 package controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
 import dto.CurrencyDTO;
-import dto.Error;
-import jakarta.servlet.http.HttpServlet;
+import dto.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Optional;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
-public class CurrencyController extends HttpServlet {
+public class CurrencyController extends AbstractMainController {
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         String currencyCode = req.getPathInfo().replaceAll("/", "");
         CurrencyDTO currencyReqDTO = new CurrencyDTO();
         currencyReqDTO.setCode(currencyCode);
 
-        if (currencyCode.isEmpty() || currencyCode.isBlank()) {
-            resp.setStatus(SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new Error(
+        if (!isCurrencyCodeValid2(currencyReqDTO)) {
+            throw new RestErrorException(
                     SC_BAD_REQUEST,
-                    "The currency code is empty."
-            ));
-
-            return;
+                    "Currency code is invalid"
+            );
         }
 
-        try {
-            Optional<CurrencyDTO> currencyDTO = currencyDAO.getByCode(currencyReqDTO);
+        Optional<CurrencyDTO> currencyDTO = currencyDAO.getByCode(currencyReqDTO);
 
-            if (currencyDTO.isEmpty()) {
-                resp.setStatus(SC_NOT_FOUND);
-                objectMapper.writeValue(resp.getWriter(), new Error(
-                        SC_NOT_FOUND,
-                        "The requested currency was not found."
-                ));
-
-                return;
-            }
-
-            objectMapper.writeValue(resp.getWriter(), currencyDTO.get());
-        } catch (SQLException e) {
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_INTERNAL_SERVER_ERROR,
-                    "The database is unavailable. Please try again later."
-            ));
+        if (currencyDTO.isEmpty()) {
+            throw new RestErrorException(
+                    SC_NOT_FOUND,
+                    "The requested currency was not found."
+            );
         }
+
+        objectMapper.writeValue(resp.getWriter(), currencyDTO.get());
+    }
+
+    private boolean isCurrencyCodeValid2(CurrencyDTO currencyReqDTO) {
+        return !currencyReqDTO.getCode().isEmpty() ||
+               !currencyReqDTO.getCode().isBlank() ||
+               !isCurrencyCodeValid(currencyReqDTO.getCode());
     }
 }
