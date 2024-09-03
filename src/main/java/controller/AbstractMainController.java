@@ -36,6 +36,19 @@ public abstract class AbstractMainController extends HttpServlet {
         }
     }
 
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+        try {
+            handlePost(req, resp);
+        } catch (RestErrorException e) {
+            sendError(e.code, e.message, resp);
+        } catch (SQLException e) {
+            sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error", resp);
+        } catch (Exception e) {
+            sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
+        }
+    }
+
+
     protected void sendError(int code, String message, HttpServletResponse resp) {
         try {
             resp.setStatus(code);
@@ -47,4 +60,6 @@ public abstract class AbstractMainController extends HttpServlet {
     }
 
     abstract protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception;
+
+    abstract protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception;
 }
