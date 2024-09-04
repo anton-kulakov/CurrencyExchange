@@ -28,14 +28,14 @@ public class CurrenciesController extends AbstractMainController {
         if (!isParametersValid(currencyReqDTO)) {
             throw new RestErrorException(
                     SC_BAD_REQUEST,
-                    "One or more parameters are not valid."
+                    "One or more parameters are not valid"
             );
         }
 
         if (currencyDAO.getByCode(currencyReqDTO).isPresent()) {
             throw new RestErrorException(
                     SC_CONFLICT,
-                    "A currency with this code already exists."
+                    "A currency with this code already exists"
             );
         }
 
