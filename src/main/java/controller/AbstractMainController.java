@@ -24,6 +24,16 @@ public abstract class AbstractMainController extends HttpServlet {
         exchangeRateDAO = ExchangeRateDAO.getInstance();
     }
 
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String method = req.getMethod();
+
+        if ("PATCH".equalsIgnoreCase(method)) {
+            doPatch(req, resp);
+        } else {
+            super.service(req, resp);
+        }
+    }
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         try {
             handleGet(req, resp);
@@ -48,6 +58,18 @@ public abstract class AbstractMainController extends HttpServlet {
         }
     }
 
+    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) {
+        try {
+            handlePatch(req, resp);
+        } catch (RestErrorException e) {
+            sendError(e.code, e.message, resp);
+        } catch (SQLException e) {
+            sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error", resp);
+        } catch (Exception e) {
+            sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
+        }
+    }
+
 
     protected void sendError(int code, String message, HttpServletResponse resp) {
         try {
@@ -62,4 +84,7 @@ public abstract class AbstractMainController extends HttpServlet {
     abstract protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception;
 
     abstract protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception;
+
+
+    abstract protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception;
 }

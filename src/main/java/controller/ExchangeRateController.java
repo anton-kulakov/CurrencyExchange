@@ -1,12 +1,8 @@
 package controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import dao.ExchangeRateDAO;
 import dto.ExchangeRateReqDTO;
 import dto.ExchangeRateRespDTO;
-import dto.Error;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
+import dto.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -16,141 +12,100 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Optional;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
-public class ExchangeRateController extends HttpServlet {
-    private final ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+public class ExchangeRateController extends AbstractMainController {
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String currencyPair = req.getPathInfo().replaceAll("/", "");
-
-        if (!isCurrencyPairComplete(currencyPair)) {
-            resp.setStatus(SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new Error(
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
+            throw new RestErrorException(
                     SC_BAD_REQUEST,
-                    "There is no code for one or two currencies."
-            ));
-
-            return;
+                    "The request is not valid"
+            );
         }
 
+        ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);
+
+        if (!isCurrencyCodesValid(exRateReqDTO)) {
+            throw new RestErrorException(
+                    SC_BAD_REQUEST,
+                    "One or more parameters are not valid"
+            );
+        }
+
+        Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
+
+        if (optionalExRateRespDTO.isEmpty()) {
+            throw new SQLException();
+        }
+
+        objectMapper.writeValue(resp.getWriter(), optionalExRateRespDTO.get());
+    }
+
+    private static ExchangeRateReqDTO getExRateReqDTO(HttpServletRequest req) {
+        String currencyPair = req.getPathInfo().substring(1, 7);
         String baseCurrencyCode = currencyPair.substring(0, 3);
         String targetCurrencyCode = currencyPair.substring(3, 6);
 
-        ExchangeRateReqDTO exchangeRateReqDTO = new ExchangeRateReqDTO();
-        exchangeRateReqDTO.setBaseCurrencyCode(baseCurrencyCode);
-        exchangeRateReqDTO.setTargetCurrencyCode(targetCurrencyCode);
-
-        try {
-            Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exchangeRateReqDTO);
-
-            if (optionalExRateRespDTO.isEmpty()) {
-                resp.setStatus(SC_NOT_FOUND);
-                objectMapper.writeValue(resp.getWriter(), new Error(
-                        SC_NOT_FOUND,
-                        "The requested exchange rate was not found."
-                ));
-
-                return;
-            }
-
-            objectMapper.writeValue(resp.getWriter(), optionalExRateRespDTO.get());
-        } catch (SQLException e) {
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_INTERNAL_SERVER_ERROR,
-                    "The database is unavailable. Please try again later."
-            ));
-        }
-    }
-
-    @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String method = req.getMethod();
-
-        if ("PATCH".equalsIgnoreCase(method)) {
-            doPatch(req, resp);
-        } else {
-            super.service(req, resp);
-        }
-    }
-
-    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String currencyPair = req.getPathInfo().replaceAll("/", "");
-
-        Optional<BigDecimal> optionalRate = getOptionalRateParameter(req);
-
-        if (optionalRate.isEmpty()) {
-            resp.setStatus(SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_BAD_REQUEST,
-                    "The rate is empty."
-            ));
-
-            return;
-        }
-
-        if (BigDecimal.ZERO.equals(optionalRate.get())) {
-            resp.setStatus(SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_BAD_REQUEST,
-                    "The rate equals zero."
-            ));
-
-            return;
-        }
-
-        if (!isCurrencyPairComplete(currencyPair)) {
-            resp.setStatus(SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_BAD_REQUEST,
-                    "There is no code for one or two currencies."
-            ));
-
-            return;
-        }
-
-        String baseCurrencyCode = currencyPair.substring(0, 3);
-        String targetCurrencyCode = currencyPair.substring(3, 6);
         ExchangeRateReqDTO exRateReqDTO = new ExchangeRateReqDTO();
-
         exRateReqDTO.setBaseCurrencyCode(baseCurrencyCode);
         exRateReqDTO.setTargetCurrencyCode(targetCurrencyCode);
 
-        try {
+        return exRateReqDTO;
+    }
 
-            Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
+    @Override
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
-            if (optionalExRateRespDTO.isEmpty()) {
-                resp.setStatus(SC_NOT_FOUND);
-                objectMapper.writeValue(resp.getWriter(), new Error(
-                        SC_NOT_FOUND,
-                        "The requested exchange rate was not found."
-                ));
+    }
 
-                return;
-            }
+    @Override
+    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
+            throw new RestErrorException(
+                    SC_BAD_REQUEST,
+                    "The request is not valid"
+            );
+        }
 
-            ExchangeRateRespDTO exRateRespDTO = optionalExRateRespDTO.get();
-            exRateRespDTO.setRate(optionalRate.get());
+        ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);
+        BigDecimal rate = getRateParameter(req);
+        exRateReqDTO.setRate(rate);
 
-            if (exchangeRateDAO.update(exRateRespDTO)) {
-                objectMapper.writeValue(resp.getWriter(), exRateRespDTO);
-            }
+        if (!isCurrencyCodesValid(exRateReqDTO) || BigDecimal.ZERO.equals(exRateReqDTO.getRate())) {
+            throw new RestErrorException(
+                    SC_BAD_REQUEST,
+                    "One or more parameters are not valid"
+            );
+        }
 
-        } catch (SQLException e) {
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_INTERNAL_SERVER_ERROR,
-                    "The database is unavailable. Please try again later."
-            ));
+        Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
+
+        if (optionalExRateRespDTO.isEmpty()) {
+            throw new SQLException();
+        }
+
+        ExchangeRateRespDTO exRateRespDTO = optionalExRateRespDTO.get();
+        exRateRespDTO.setRate(exRateReqDTO.getRate());
+
+        if (exchangeRateDAO.update(exRateRespDTO)) {
+            objectMapper.writeValue(resp.getWriter(), exRateRespDTO);
+        } else {
+            throw new SQLException();
         }
     }
 
-    private static Optional<BigDecimal> getOptionalRateParameter(HttpServletRequest req) throws IOException {
+    private boolean isCurrencyCodesValid(ExchangeRateReqDTO exRateReqDTO) {
+        return isCurrencyCodeValid(exRateReqDTO.getBaseCurrencyCode()) &&
+               isCurrencyCodeValid(exRateReqDTO.getTargetCurrencyCode());
+    }
+
+    private static BigDecimal getRateParameter(HttpServletRequest req) throws IOException {
         String stringRate = "";
         String line;
-        BigDecimal rate = null;
+        BigDecimal rate = BigDecimal.ZERO;
 
         BufferedReader reader = req.getReader();
         StringBuilder formBody = new StringBuilder();
@@ -174,10 +129,6 @@ public class ExchangeRateController extends HttpServlet {
             rate = new BigDecimal(stringRate);
         }
 
-        return Optional.ofNullable(rate);
-    }
-
-    private boolean isCurrencyPairComplete(String currencyPair) {
-        return !currencyPair.isBlank() && currencyPair.length() >= 6;
+        return rate;
     }
 }

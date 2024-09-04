@@ -41,4 +41,9 @@ public class CurrencyController extends AbstractMainController {
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
     }
+
+    @Override
+    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) {
+
+    }
 }

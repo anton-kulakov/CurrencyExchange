@@ -15,7 +15,6 @@ import static jakarta.servlet.http.HttpServletResponse.*;
 import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
 public class ExchangeRatesController extends AbstractMainController {
-
     @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         objectMapper.writeValue(resp.getWriter(), exchangeRateDAO.getAll());
@@ -69,6 +68,11 @@ public class ExchangeRatesController extends AbstractMainController {
 
         resp.setStatus(SC_CREATED);
         objectMapper.writeValue(resp.getWriter(), exRateRespDTO.get());
+    }
+
+    @Override
+    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) {
+
     }
 
     private boolean isParametersValid(ExchangeRateReqDTO exRateReqDTO) {
