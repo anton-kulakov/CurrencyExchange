@@ -70,11 +70,6 @@ public class ExchangeRatesController extends AbstractMainController {
         objectMapper.writeValue(resp.getWriter(), exRateRespDTO.get());
     }
 
-    @Override
-    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) {
-
-    }
-
     private boolean isParametersValid(ExchangeRateReqDTO exRateReqDTO) {
         return !exRateReqDTO.getBaseCurrencyCode().isBlank() &&
                !exRateReqDTO.getTargetCurrencyCode().isBlank() &&

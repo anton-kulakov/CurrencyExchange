@@ -36,14 +36,4 @@ public class CurrencyController extends AbstractMainController {
 
         objectMapper.writeValue(resp.getWriter(), currencyDTO.get());
     }
-
-    @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-
-    }
-
-    @Override
-    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) {
-
-    }
 }

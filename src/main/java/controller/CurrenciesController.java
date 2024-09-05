@@ -50,11 +50,6 @@ public class CurrenciesController extends AbstractMainController {
         objectMapper.writeValue(resp.getWriter(), currencyDTO.get());
     }
 
-    @Override
-    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) {
-
-    }
-
     private boolean isParametersValid(CurrencyDTO currencyReqDTO) {
         return !currencyReqDTO.getCode().isBlank() &&
                !currencyReqDTO.getName().isBlank() &&

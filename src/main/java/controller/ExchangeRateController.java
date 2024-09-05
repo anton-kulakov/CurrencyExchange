@@ -57,11 +57,6 @@ public class ExchangeRateController extends AbstractMainController {
     }
 
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-
-    }
-
-    @Override
     protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
             throw new RestErrorException(

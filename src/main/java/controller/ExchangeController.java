@@ -53,14 +53,4 @@ public class ExchangeController extends AbstractMainController {
                isCurrencyCodeValid(exchangeReqDTO.getTo()) &&
                !BigDecimal.ZERO.equals(exchangeReqDTO.getAmount());
     }
-
-    @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-
-    }
-
-    @Override
-    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-
-    }
 }
