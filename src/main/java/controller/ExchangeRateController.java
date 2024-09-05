@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -85,10 +86,30 @@ public class ExchangeRateController extends AbstractMainController {
         ExchangeRateRespDTO exRateRespDTO = optionalExRateRespDTO.get();
         exRateRespDTO.setRate(exRateReqDTO.getRate());
 
+        updateReversedExchangeRate(exRateReqDTO);
+
         if (exchangeRateDAO.update(exRateRespDTO)) {
             objectMapper.writeValue(resp.getWriter(), exRateRespDTO);
         } else {
             throw new SQLException();
+        }
+    }
+
+    private void updateReversedExchangeRate(ExchangeRateReqDTO exRateReqDTO) throws SQLException {
+        ExchangeRateReqDTO reversedExRateReqDTO = new ExchangeRateReqDTO(
+                exRateReqDTO.getTargetCurrencyCode(),
+                exRateReqDTO.getBaseCurrencyCode(),
+                BigDecimal.ONE.divide(exRateReqDTO.getRate(), 6, RoundingMode.HALF_UP)
+        );
+
+        Optional<ExchangeRateRespDTO> optReversedExRateRespDTO = exchangeRateDAO.getByCodes(reversedExRateReqDTO);
+
+        if (optReversedExRateRespDTO.isPresent()) {
+            optReversedExRateRespDTO.get().setRate(reversedExRateReqDTO.getRate());
+
+            if (!exchangeRateDAO.update(optReversedExRateRespDTO.get())) {
+                throw new SQLException();
+            }
         }
     }
 
