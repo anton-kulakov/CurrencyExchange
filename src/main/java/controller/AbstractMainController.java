@@ -85,6 +85,5 @@ public abstract class AbstractMainController extends HttpServlet {
 
     abstract protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception;
 
-
     abstract protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception;
 }

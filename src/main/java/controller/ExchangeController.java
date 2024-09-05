@@ -1,82 +1,66 @@
 package controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.ExchangeReqDTO;
 import dto.ExchangeRespDTO;
-import dto.Error;
-import jakarta.servlet.http.HttpServlet;
+import dto.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import service.ExchangeService;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Optional;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
-public class ExchangeController extends HttpServlet {
+public class ExchangeController extends AbstractMainController {
     private final ExchangeService exchangeService = new ExchangeService();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         String from = req.getParameter("from");
         String to = req.getParameter("to");
-        BigDecimal amount = new BigDecimal(req.getParameter("amount"));
+        String stringAmount = req.getParameter("amount");
 
+        if (stringAmount.isBlank()) {
+            stringAmount = String.valueOf(0);
+        }
+
+        BigDecimal amount = new BigDecimal(stringAmount);
         ExchangeReqDTO exchangeReqDTO = new ExchangeReqDTO(from, to, amount);
 
-        if (from.isEmpty() || from.isBlank()) {
-            resp.setStatus(SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new Error(
+        if (!isParametersValid(exchangeReqDTO)) {
+            throw new RestErrorException(
                     SC_BAD_REQUEST,
-                    "The code of base currency is empty."
-            ));
+                    "One or more parameters are not valid"
+            );
         }
 
-        if (to.isEmpty() || to.isBlank()) {
-            resp.setStatus(SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_BAD_REQUEST,
-                    "The code of target currency is empty."
-            ));
+        Optional<ExchangeRespDTO> optionalExchangeRespDTO = exchangeService.makeExchange(exchangeReqDTO);
+
+        if (optionalExchangeRespDTO.isEmpty()) {
+            throw new SQLException();
         }
 
-        if (String.valueOf(amount).isEmpty() || String.valueOf(amount).isBlank()) {
-            resp.setStatus(SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_BAD_REQUEST,
-                    "The amount to be exchanged is empty."
-            ));
-        }
+        objectMapper.writeValue(resp.getWriter(), optionalExchangeRespDTO.get());
+    }
 
-        if (BigDecimal.ZERO.equals(amount)) {
-            resp.setStatus(SC_BAD_REQUEST);
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_BAD_REQUEST,
-                    "The amount to be exchanged equals zero."
-            ));
-        }
+    private boolean isParametersValid(ExchangeReqDTO exchangeReqDTO) {
+        return !exchangeReqDTO.getFrom().isBlank() &&
+               !exchangeReqDTO.getTo().isBlank() &&
+               isCurrencyCodeValid(exchangeReqDTO.getFrom()) &&
+               isCurrencyCodeValid(exchangeReqDTO.getTo()) &&
+               !BigDecimal.ZERO.equals(exchangeReqDTO.getAmount());
+    }
 
-        try {
-            Optional<ExchangeRespDTO> exchange = exchangeService.makeExchange(exchangeReqDTO);
+    @Override
+    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
-            if (exchange.isPresent()) {
-                objectMapper.writeValue(resp.getWriter(), exchange.get());
-            } else {
-                resp.setStatus(SC_NOT_FOUND);
-                objectMapper.writeValue(resp.getWriter(), new Error(
-                        SC_NOT_FOUND,
-                        "There is no exchange rate for the requested currencies."
-                ));
-            }
-        } catch (SQLException e) {
-            objectMapper.writeValue(resp.getWriter(), new Error(
-                    SC_INTERNAL_SERVER_ERROR,
-                    "The database is unavailable. Please try again later."
-            ));
-        }
+    }
+
+    @Override
+    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
     }
 }
