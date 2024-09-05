@@ -95,24 +95,6 @@ public class ExchangeRateController extends AbstractMainController {
         }
     }
 
-    private void updateReversedExchangeRate(ExchangeRateReqDTO exRateReqDTO) throws SQLException {
-        ExchangeRateReqDTO reversedExRateReqDTO = new ExchangeRateReqDTO(
-                exRateReqDTO.getTargetCurrencyCode(),
-                exRateReqDTO.getBaseCurrencyCode(),
-                BigDecimal.ONE.divide(exRateReqDTO.getRate(), 6, RoundingMode.HALF_UP)
-        );
-
-        Optional<ExchangeRateRespDTO> optReversedExRateRespDTO = exchangeRateDAO.getByCodes(reversedExRateReqDTO);
-
-        if (optReversedExRateRespDTO.isPresent()) {
-            optReversedExRateRespDTO.get().setRate(reversedExRateReqDTO.getRate());
-
-            if (!exchangeRateDAO.update(optReversedExRateRespDTO.get())) {
-                throw new SQLException();
-            }
-        }
-    }
-
     private boolean isCurrencyCodesValid(ExchangeRateReqDTO exRateReqDTO) {
         return isCurrencyCodeValid(exRateReqDTO.getBaseCurrencyCode()) &&
                isCurrencyCodeValid(exRateReqDTO.getTargetCurrencyCode());

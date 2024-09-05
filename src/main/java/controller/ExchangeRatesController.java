@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -65,6 +66,8 @@ public class ExchangeRatesController extends AbstractMainController {
         if (exRateRespDTO.isEmpty()) {
             throw new SQLException();
         }
+
+        updateReversedExchangeRate(exRateReqDTO);
 
         resp.setStatus(SC_CREATED);
         objectMapper.writeValue(resp.getWriter(), exRateRespDTO.get());

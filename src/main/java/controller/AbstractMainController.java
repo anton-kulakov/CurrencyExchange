@@ -3,6 +3,8 @@ package controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
 import dao.ExchangeRateDAO;
+import dto.ExchangeRateReqDTO;
+import dto.ExchangeRateRespDTO;
 import dto.RestErrorException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -10,7 +12,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public abstract class AbstractMainController extends HttpServlet {
     protected ObjectMapper objectMapper;
@@ -89,5 +94,22 @@ public abstract class AbstractMainController extends HttpServlet {
 
     protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
+    }
+    protected void updateReversedExchangeRate(ExchangeRateReqDTO exRateReqDTO) throws SQLException {
+        ExchangeRateReqDTO reversedExRateReqDTO = new ExchangeRateReqDTO(
+                exRateReqDTO.getTargetCurrencyCode(),
+                exRateReqDTO.getBaseCurrencyCode(),
+                BigDecimal.ONE.divide(exRateReqDTO.getRate(), 6, RoundingMode.HALF_UP)
+        );
+
+        Optional<ExchangeRateRespDTO> optReversedExRateRespDTO = exchangeRateDAO.getByCodes(reversedExRateReqDTO);
+
+        if (optReversedExRateRespDTO.isPresent()) {
+            optReversedExRateRespDTO.get().setRate(reversedExRateReqDTO.getRate());
+
+            if (!exchangeRateDAO.update(optReversedExRateRespDTO.get())) {
+                throw new SQLException();
+            }
+        }
     }
 }
