@@ -1,4 +1,4 @@
-package dto;
+package exception;
 
 import lombok.AllArgsConstructor;
 

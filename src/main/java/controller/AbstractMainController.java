@@ -5,7 +5,7 @@ import dao.CurrencyDAO;
 import dao.ExchangeRateDAO;
 import dto.ExchangeRateReqDTO;
 import dto.ExchangeRateRespDTO;
-import dto.RestErrorException;
+import exception.RestErrorException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;

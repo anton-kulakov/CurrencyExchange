@@ -2,7 +2,7 @@ package controller;
 
 import dto.ExchangeReqDTO;
 import dto.ExchangeRespDTO;
-import dto.RestErrorException;
+import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import service.ExchangeService;

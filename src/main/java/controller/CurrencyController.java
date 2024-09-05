@@ -1,7 +1,7 @@
 package controller;
 
 import dto.CurrencyDTO;
-import dto.RestErrorException;
+import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
