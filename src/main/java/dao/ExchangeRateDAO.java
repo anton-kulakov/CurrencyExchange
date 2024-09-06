@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-
 public class ExchangeRateDAO {
     private final static ExchangeRateDAO INSTANCE = new ExchangeRateDAO();
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
@@ -61,8 +59,15 @@ public class ExchangeRateDAO {
             baseCurrencyDTO.setCode(exRateReqDTO.getBaseCurrencyCode());
             targetCurrencyDTO.setCode(exRateReqDTO.getTargetCurrencyCode());
 
-            Currency baseCurrency = modelMapper.map(currencyDAO.getByCode(baseCurrencyDTO).get(), Currency.class);
-            Currency targetCurrency = modelMapper.map(currencyDAO.getByCode(targetCurrencyDTO).get(), Currency.class);
+            Optional<CurrencyDTO> optBaseCurrencyDTO = currencyDAO.getByCode(baseCurrencyDTO);
+            Optional<CurrencyDTO> optTargetCurrencyDTO = currencyDAO.getByCode(targetCurrencyDTO);
+
+            if (optBaseCurrencyDTO.isEmpty() || optTargetCurrencyDTO.isEmpty()) {
+                throw new DBException();
+            }
+
+            Currency baseCurrency = modelMapper.map(optBaseCurrencyDTO.get(), Currency.class);
+            Currency targetCurrency = modelMapper.map(optTargetCurrencyDTO.get(), Currency.class);
             BigDecimal rate = exRateReqDTO.getRate();
 
             statement.setInt(1, baseCurrency.getId());
