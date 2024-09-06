@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-
 public class CurrencyDAO {
     private final static CurrencyDAO INSTANCE = new CurrencyDAO();
     private final ModelMapper modelMapper = new ModelMapper();
