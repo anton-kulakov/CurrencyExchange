@@ -2,6 +2,7 @@ package controller;
 
 import dto.ExchangeRateReqDTO;
 import dto.ExchangeRateRespDTO;
+import exception.InvalidParamException;
 import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,10 +10,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.Optional;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.*;
 import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
 public class ExchangeRateController extends AbstractMainController {
@@ -20,7 +20,7 @@ public class ExchangeRateController extends AbstractMainController {
     @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
-            throw new RestErrorException(
+            throw new InvalidParamException(
                     SC_BAD_REQUEST,
                     "The request is not valid"
             );
@@ -29,7 +29,7 @@ public class ExchangeRateController extends AbstractMainController {
         ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);
 
         if (!isCurrencyCodesValid(exRateReqDTO)) {
-            throw new RestErrorException(
+            throw new InvalidParamException(
                     SC_BAD_REQUEST,
                     "One or more parameters are not valid"
             );
@@ -38,7 +38,10 @@ public class ExchangeRateController extends AbstractMainController {
         Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
 
         if (optionalExRateRespDTO.isEmpty()) {
-            throw new SQLException();
+            throw new RestErrorException(
+                    SC_INTERNAL_SERVER_ERROR,
+                    "Something happened with the database. Please try again later!"
+            );
         }
 
         objectMapper.writeValue(resp.getWriter(), optionalExRateRespDTO.get());
@@ -59,7 +62,7 @@ public class ExchangeRateController extends AbstractMainController {
     @Override
     protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
-            throw new RestErrorException(
+            throw new InvalidParamException(
                     SC_BAD_REQUEST,
                     "The request is not valid"
             );
@@ -70,7 +73,7 @@ public class ExchangeRateController extends AbstractMainController {
         exRateReqDTO.setRate(rate);
 
         if (!isCurrencyCodesValid(exRateReqDTO) || BigDecimal.ZERO.equals(exRateReqDTO.getRate())) {
-            throw new RestErrorException(
+            throw new InvalidParamException(
                     SC_BAD_REQUEST,
                     "One or more parameters are not valid"
             );
@@ -79,7 +82,10 @@ public class ExchangeRateController extends AbstractMainController {
         Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
 
         if (optionalExRateRespDTO.isEmpty()) {
-            throw new SQLException();
+            throw new RestErrorException(
+                    SC_NOT_FOUND,
+                    "The requested exchange rate could not be found in the database"
+            );
         }
 
         ExchangeRateRespDTO exRateRespDTO = optionalExRateRespDTO.get();
@@ -89,8 +95,6 @@ public class ExchangeRateController extends AbstractMainController {
 
         if (exchangeRateDAO.update(exRateRespDTO)) {
             objectMapper.writeValue(resp.getWriter(), exRateRespDTO);
-        } else {
-            throw new SQLException();
         }
     }
 

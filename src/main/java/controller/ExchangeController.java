@@ -2,16 +2,17 @@ package controller;
 
 import dto.ExchangeReqDTO;
 import dto.ExchangeRespDTO;
+import exception.InvalidParamException;
 import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import service.ExchangeService;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.Optional;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
 public class ExchangeController extends AbstractMainController {
@@ -31,7 +32,7 @@ public class ExchangeController extends AbstractMainController {
         ExchangeReqDTO exchangeReqDTO = new ExchangeReqDTO(from, to, amount);
 
         if (!isParametersValid(exchangeReqDTO)) {
-            throw new RestErrorException(
+            throw new InvalidParamException(
                     SC_BAD_REQUEST,
                     "One or more parameters are not valid"
             );
@@ -40,7 +41,10 @@ public class ExchangeController extends AbstractMainController {
         Optional<ExchangeRespDTO> optionalExchangeRespDTO = exchangeService.makeExchange(exchangeReqDTO);
 
         if (optionalExchangeRespDTO.isEmpty()) {
-            throw new SQLException();
+            throw new RestErrorException(
+                    SC_INTERNAL_SERVER_ERROR,
+                    "Something happened with the database. Please try again later!"
+            );
         }
 
         objectMapper.writeValue(resp.getWriter(), optionalExchangeRespDTO.get());

@@ -5,6 +5,7 @@ import dto.ExchangeRateReqDTO;
 import dto.ExchangeRateRespDTO;
 import entity.Currency;
 import entity.ExchangeRate;
+import exception.DBException;
 import org.modelmapper.ModelMapper;
 import utils.ConnectionManager;
 
@@ -14,6 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 public class ExchangeRateDAO {
     private final static ExchangeRateDAO INSTANCE = new ExchangeRateDAO();
@@ -49,7 +52,7 @@ public class ExchangeRateDAO {
             WHERE bc.code = ? AND tc.code = ?
             """;
 
-    public Optional<ExchangeRateRespDTO> save(ExchangeRateReqDTO exRateReqDTO) throws SQLException {
+    public Optional<ExchangeRateRespDTO> save(ExchangeRateReqDTO exRateReqDTO) throws DBException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -86,10 +89,12 @@ public class ExchangeRateDAO {
             }
 
             return Optional.ofNullable(exRateRespDTO);
+        } catch (SQLException e) {
+            throw new DBException();
         }
     }
 
-    public List<ExchangeRateRespDTO> getAll() throws SQLException {
+    public List<ExchangeRateRespDTO> getAll() throws DBException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_ALL_SQL)) {
 
@@ -105,10 +110,12 @@ public class ExchangeRateDAO {
             return exchangeRates.stream()
                     .map(exchangeRate -> modelMapper.map(exchangeRate, ExchangeRateRespDTO.class))
                     .collect(Collectors.toList());
+        } catch (SQLException e) {
+            throw new DBException();
         }
     }
 
-    public Optional<ExchangeRateRespDTO> getByCodes(ExchangeRateReqDTO exRateReqDTO) throws SQLException {
+    public Optional<ExchangeRateRespDTO> getByCodes(ExchangeRateReqDTO exRateReqDTO) throws DBException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_BY_CODE_SQL)) {
 
@@ -129,32 +136,39 @@ public class ExchangeRateDAO {
             }
 
             return Optional.ofNullable(exRateRespDTO);
+        } catch (SQLException e) {
+            throw new DBException();
         }
     }
 
-    private ExchangeRate createExchangeRate(ResultSet resultSet) throws SQLException {
-        Currency baseCurrency = new Currency(
-                resultSet.getInt("base_currency_id"),
-                resultSet.getString("base_currency_code"),
-                resultSet.getString("base_currency_full_name"),
-                resultSet.getString("base_currency_sign")
-        );
-        Currency targetCurrency = new Currency(
-                resultSet.getInt("target_currency_id"),
-                resultSet.getString("target_currency_code"),
-                resultSet.getString("target_currency_full_name"),
-                resultSet.getString("target_currency_sign")
-        );
+    private ExchangeRate createExchangeRate(ResultSet resultSet) throws DBException {
+        try {
+            Currency baseCurrency = new Currency(
+                    resultSet.getInt("base_currency_id"),
+                    resultSet.getString("base_currency_code"),
+                    resultSet.getString("base_currency_full_name"),
+                    resultSet.getString("base_currency_sign")
+            );
 
-        return new ExchangeRate(
-                resultSet.getInt("id"),
-                baseCurrency,
-                targetCurrency,
-                resultSet.getBigDecimal("rate")
-        );
+            Currency targetCurrency = new Currency(
+                    resultSet.getInt("target_currency_id"),
+                    resultSet.getString("target_currency_code"),
+                    resultSet.getString("target_currency_full_name"),
+                    resultSet.getString("target_currency_sign")
+            );
+
+            return new ExchangeRate(
+                    resultSet.getInt("id"),
+                    baseCurrency,
+                    targetCurrency,
+                    resultSet.getBigDecimal("rate")
+            );
+        } catch (SQLException e) {
+            throw new DBException();
+        }
     }
 
-    public boolean update(ExchangeRateRespDTO exRateRespDTO) throws SQLException {
+    public boolean update(ExchangeRateRespDTO exRateRespDTO) throws DBException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
 
@@ -163,6 +177,8 @@ public class ExchangeRateDAO {
             statement.setInt(3, exRateRespDTO.getTargetCurrency().getId());
 
             return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new DBException();
         }
     }
 

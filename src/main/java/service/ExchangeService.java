@@ -3,12 +3,12 @@ package service;
 import dao.ExchangeRateDAO;
 import dto.*;
 import entity.Currency;
+import exception.DBException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class ExchangeService {
@@ -29,7 +29,7 @@ public class ExchangeService {
         modelMapper.addMappings(exchangeMap);
     }
 
-    public Optional<ExchangeRespDTO> makeExchange(ExchangeReqDTO exchangeReqDTO) throws SQLException {
+    public Optional<ExchangeRespDTO> makeExchange(ExchangeReqDTO exchangeReqDTO) throws DBException {
         Optional<ExchangeRateRespDTO> optionalExchangeRate = getOptionalExchangeRate(exchangeReqDTO);
         ExchangeRespDTO exchangeRespDTO = null;
 
@@ -49,7 +49,7 @@ public class ExchangeService {
         return Optional.ofNullable(exchangeRespDTO);
     }
 
-    private Optional<ExchangeRateRespDTO> getOptionalExchangeRate(ExchangeReqDTO exchangeReqDTO) throws SQLException {
+    private Optional<ExchangeRateRespDTO> getOptionalExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
         Optional<ExchangeRateRespDTO> optionalExchangeRate = getDirectExchangeRate(exchangeReqDTO);
 
         if (optionalExchangeRate.isEmpty()) {
@@ -63,13 +63,13 @@ public class ExchangeService {
         return optionalExchangeRate;
     }
 
-    private Optional<ExchangeRateRespDTO> getDirectExchangeRate(ExchangeReqDTO exchangeReqDTO) throws SQLException {
+    private Optional<ExchangeRateRespDTO> getDirectExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
         ExchangeRateReqDTO directExchangeRate = modelMapper.map(exchangeReqDTO, ExchangeRateReqDTO.class);
 
         return exchangeRateDAO.getByCodes(directExchangeRate);
     }
 
-    private Optional<ExchangeRateRespDTO> getFromReversedExchangeRate(ExchangeReqDTO exchangeReqDTO) throws SQLException {
+    private Optional<ExchangeRateRespDTO> getFromReversedExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
         String from = exchangeReqDTO.getFrom();
         String to = exchangeReqDTO.getTo();
 
@@ -93,7 +93,7 @@ public class ExchangeService {
         return directExchangeRate;
     }
 
-    private Optional<ExchangeRateRespDTO> getFromCrossExchangeRate(ExchangeReqDTO exchangeReqDTO) throws SQLException {
+    private Optional<ExchangeRateRespDTO> getFromCrossExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
         ExchangeRateReqDTO exRateReqDTOFrom = new ExchangeRateReqDTO();
         ExchangeRateReqDTO exRateReqDTOTo = new ExchangeRateReqDTO();
 

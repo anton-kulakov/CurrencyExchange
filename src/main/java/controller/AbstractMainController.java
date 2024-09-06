@@ -5,6 +5,8 @@ import dao.CurrencyDAO;
 import dao.ExchangeRateDAO;
 import dto.ExchangeRateReqDTO;
 import dto.ExchangeRateRespDTO;
+import exception.DBException;
+import exception.InvalidParamException;
 import exception.RestErrorException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -14,7 +16,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.SQLException;
 import java.util.Optional;
 
 public abstract class AbstractMainController extends HttpServlet {
@@ -39,13 +40,14 @@ public abstract class AbstractMainController extends HttpServlet {
             super.service(req, resp);
         }
     }
+
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         try {
             handleGet(req, resp);
         } catch (RestErrorException e) {
             sendError(e.code, e.message, resp);
-        } catch (SQLException e) {
-            sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error", resp);
+        } catch (InvalidParamException e) {
+            sendError(e.code, e.message, resp);
         } catch (Exception e) {
             sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
         }
@@ -56,8 +58,8 @@ public abstract class AbstractMainController extends HttpServlet {
             handlePost(req, resp);
         } catch (RestErrorException e) {
             sendError(e.code, e.message, resp);
-        } catch (SQLException e) {
-            sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error", resp);
+        } catch (InvalidParamException e) {
+            sendError(e.code, e.message, resp);
         } catch (Exception e) {
             sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
         }
@@ -68,8 +70,10 @@ public abstract class AbstractMainController extends HttpServlet {
             handlePatch(req, resp);
         } catch (RestErrorException e) {
             sendError(e.code, e.message, resp);
-        } catch (SQLException e) {
-            sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error", resp);
+        } catch (InvalidParamException e) {
+            sendError(e.code, e.message, resp);
+        } catch (DBException e) {
+            sendError(e.code, e.message, resp);
         } catch (Exception e) {
             sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
         }
@@ -95,7 +99,8 @@ public abstract class AbstractMainController extends HttpServlet {
     protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
     }
-    protected void updateReversedExchangeRate(ExchangeRateReqDTO exRateReqDTO) throws SQLException {
+
+    protected void updateReversedExchangeRate(ExchangeRateReqDTO exRateReqDTO) throws DBException {
         ExchangeRateReqDTO reversedExRateReqDTO = new ExchangeRateReqDTO(
                 exRateReqDTO.getTargetCurrencyCode(),
                 exRateReqDTO.getBaseCurrencyCode(),
@@ -107,9 +112,7 @@ public abstract class AbstractMainController extends HttpServlet {
         if (optReversedExRateRespDTO.isPresent()) {
             optReversedExRateRespDTO.get().setRate(reversedExRateReqDTO.getRate());
 
-            if (!exchangeRateDAO.update(optReversedExRateRespDTO.get())) {
-                throw new SQLException();
-            }
+            exchangeRateDAO.update(optReversedExRateRespDTO.get());
         }
     }
 }

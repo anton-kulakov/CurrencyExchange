@@ -1,11 +1,11 @@
 package controller;
 
 import dto.CurrencyDTO;
+import exception.InvalidParamException;
 import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
@@ -26,7 +26,7 @@ public class CurrenciesController extends AbstractMainController {
         CurrencyDTO currencyReqDTO = new CurrencyDTO(code, name, sign);
 
         if (!isParametersValid(currencyReqDTO)) {
-            throw new RestErrorException(
+            throw new InvalidParamException(
                     SC_BAD_REQUEST,
                     "One or more parameters are not valid"
             );
@@ -39,11 +39,13 @@ public class CurrenciesController extends AbstractMainController {
             );
         }
 
-
         Optional<CurrencyDTO> currencyDTO = currencyDAO.save(currencyReqDTO);
 
         if (currencyDTO.isEmpty()) {
-            throw new SQLException();
+            throw new RestErrorException(
+                    SC_INTERNAL_SERVER_ERROR,
+                    "Something happened with the database. Please try again later!"
+            );
         }
 
         resp.setStatus(SC_CREATED);

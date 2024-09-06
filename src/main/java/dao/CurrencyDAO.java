@@ -2,6 +2,7 @@ package dao;
 
 import dto.CurrencyDTO;
 import entity.Currency;
+import exception.DBException;
 import org.modelmapper.ModelMapper;
 import utils.ConnectionManager;
 
@@ -10,6 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 public class CurrencyDAO {
     private final static CurrencyDAO INSTANCE = new CurrencyDAO();
@@ -27,7 +30,7 @@ public class CurrencyDAO {
             WHERE code = ?
              """;
 
-    public Optional<CurrencyDTO> save(CurrencyDTO currencyDTO) throws SQLException {
+    public Optional<CurrencyDTO> save(CurrencyDTO currencyDTO) throws DBException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -59,10 +62,12 @@ public class CurrencyDAO {
             }
 
             return Optional.ofNullable(currencyRespDTO);
+        } catch (SQLException e) {
+            throw new DBException();
         }
     }
 
-    public List<CurrencyDTO> getAll() throws SQLException {
+    public List<CurrencyDTO> getAll() throws DBException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_ALL_SQL)) {
 
@@ -78,10 +83,12 @@ public class CurrencyDAO {
             return currencies.stream()
                     .map(currency -> modelMapper.map(currency, CurrencyDTO.class))
                     .collect(Collectors.toList());
+        } catch (SQLException e) {
+            throw new DBException();
         }
     }
 
-    public Optional<CurrencyDTO> getByCode(CurrencyDTO currencyDTO) throws SQLException {
+    public Optional<CurrencyDTO> getByCode(CurrencyDTO currencyDTO) throws DBException {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(GET_BY_CODE_SQL)) {
 
@@ -100,16 +107,22 @@ public class CurrencyDAO {
             }
 
             return Optional.ofNullable(currencyRespDTO);
+        } catch (SQLException e) {
+            throw new DBException();
         }
     }
 
-    private static Currency createCurrency(ResultSet resultSet) throws SQLException {
-        return new Currency(
-                resultSet.getInt("id"),
-                resultSet.getString("code"),
-                resultSet.getString("full_name"),
-                resultSet.getString("sign")
-        );
+    private static Currency createCurrency(ResultSet resultSet) throws DBException {
+         try {
+             return new Currency(
+                     resultSet.getInt("id"),
+                     resultSet.getString("code"),
+                     resultSet.getString("full_name"),
+                     resultSet.getString("sign")
+             );
+         } catch (SQLException e) {
+             throw new DBException();
+         }
     }
 
     public static CurrencyDAO getInstance() {

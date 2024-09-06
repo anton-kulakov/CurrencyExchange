@@ -1,6 +1,7 @@
 package controller;
 
 import dto.CurrencyDTO;
+import exception.InvalidParamException;
 import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,8 +19,8 @@ public class CurrencyController extends AbstractMainController {
         CurrencyDTO currencyReqDTO = new CurrencyDTO();
         currencyReqDTO.setCode(currencyCode);
 
-        if (!currencyReqDTO.getCode().isBlank() && isCurrencyCodeValid(currencyReqDTO.getCode())) {
-            throw new RestErrorException(
+        if (currencyReqDTO.getCode().isBlank() || !isCurrencyCodeValid(currencyReqDTO.getCode())) {
+            throw new InvalidParamException(
                     SC_BAD_REQUEST,
                     "Currency code is invalid"
             );

@@ -3,12 +3,12 @@ package controller;
 import dto.CurrencyDTO;
 import dto.ExchangeRateReqDTO;
 import dto.ExchangeRateRespDTO;
+import exception.InvalidParamException;
 import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.Optional;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
@@ -35,7 +35,7 @@ public class ExchangeRatesController extends AbstractMainController {
         ExchangeRateReqDTO exRateReqDTO = new ExchangeRateReqDTO(baseCurrencyCode, targetCurrencyCode, rate);
 
         if (!isParametersValid(exRateReqDTO)) {
-            throw new RestErrorException(
+            throw new InvalidParamException(
                     SC_BAD_REQUEST,
                     "One or more parameters are not valid"
             );
@@ -63,7 +63,10 @@ public class ExchangeRatesController extends AbstractMainController {
         Optional<ExchangeRateRespDTO> exRateRespDTO = exchangeRateDAO.save(exRateReqDTO);
 
         if (exRateRespDTO.isEmpty()) {
-            throw new SQLException();
+            throw new RestErrorException(
+                    SC_INTERNAL_SERVER_ERROR,
+                    "Something happened with the database. Please try again later!"
+            );
         }
 
         updateReversedExchangeRate(exRateReqDTO);
