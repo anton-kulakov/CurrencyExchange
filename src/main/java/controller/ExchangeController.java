@@ -22,7 +22,7 @@ public class ExchangeController extends AbstractMainController {
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         String from = req.getParameter("from");
         String to = req.getParameter("to");
-        String stringAmount = req.getParameter("amount");
+        String stringAmount = req.getParameter("amount").replaceAll(",", ".");
 
         if (stringAmount.isBlank()) {
             stringAmount = String.valueOf(0);

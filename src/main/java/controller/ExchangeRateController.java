@@ -127,7 +127,7 @@ public class ExchangeRateController extends AbstractMainController {
         }
 
         if (!stringRate.isEmpty() || !stringRate.isBlank()) {
-            rate = new BigDecimal(stringRate);
+            rate = new BigDecimal(stringRate.replaceAll(",", "."));
         }
 
         return rate;
