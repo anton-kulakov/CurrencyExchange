@@ -61,8 +61,15 @@ public class ExchangeRateDAO {
             baseCurrencyDTO.setCode(exRateReqDTO.getBaseCurrencyCode());
             targetCurrencyDTO.setCode(exRateReqDTO.getTargetCurrencyCode());
 
-            Currency baseCurrency = modelMapper.map(currencyDAO.getByCode(baseCurrencyDTO).get(), Currency.class);
-            Currency targetCurrency = modelMapper.map(currencyDAO.getByCode(targetCurrencyDTO).get(), Currency.class);
+            Optional<CurrencyDTO> optBaseCurrencyDTO = currencyDAO.getByCode(baseCurrencyDTO);
+            Optional<CurrencyDTO> optTargetCurrencyDTO = currencyDAO.getByCode(targetCurrencyDTO);
+
+            if (optBaseCurrencyDTO.isEmpty() || optTargetCurrencyDTO.isEmpty()) {
+                throw new DBException();
+            }
+
+            Currency baseCurrency = modelMapper.map(optBaseCurrencyDTO.get(), Currency.class);
+            Currency targetCurrency = modelMapper.map(optTargetCurrencyDTO.get(), Currency.class);
             BigDecimal rate = exRateReqDTO.getRate();
 
             statement.setInt(1, baseCurrency.getId());
