@@ -53,6 +53,10 @@ public abstract class AbstractMainController extends HttpServlet {
             sendError(e.code, e.message, resp);
         } catch (InvalidParamException e) {
             sendError(e.code, e.message, resp);
+        } catch (InvalidRequestException e) {
+            sendError(e.code, e.message, resp);
+        } catch (DBException e) {
+            sendError(e.code, e.message, resp);
         } catch (Exception e) {
             sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
         }
@@ -64,6 +68,10 @@ public abstract class AbstractMainController extends HttpServlet {
         } catch (RestErrorException e) {
             sendError(e.code, e.message, resp);
         } catch (InvalidParamException e) {
+            sendError(e.code, e.message, resp);
+        } catch (InvalidRequestException e) {
+            sendError(e.code, e.message, resp);
+        } catch (DBException e) {
             sendError(e.code, e.message, resp);
         } catch (Exception e) {
             sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
@@ -85,9 +93,6 @@ public abstract class AbstractMainController extends HttpServlet {
             sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
         }
     }
-
-
-
 
     protected void sendError(int code, String message, HttpServletResponse resp) {
         try {
@@ -131,7 +136,6 @@ public abstract class AbstractMainController extends HttpServlet {
 
         if (optReversedExRateRespDTO.isPresent()) {
             optReversedExRateRespDTO.get().setRate(reversedExRateReqDTO.getRate());
-
             exchangeRateDAO.update(optReversedExRateRespDTO.get());
         }
     }
