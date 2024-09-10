@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-
 public class ExchangeRateDAO {
     private final static ExchangeRateDAO INSTANCE = new ExchangeRateDAO();
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();

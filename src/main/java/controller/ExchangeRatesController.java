@@ -56,9 +56,9 @@ public class ExchangeRatesController extends AbstractMainController {
             );
         }
 
-        Optional<ExchangeRateRespDTO> exRateRespDTO = exchangeRateDAO.save(exRateReqDTO);
+        Optional<ExchangeRateRespDTO> optExRateRespDTO = exchangeRateDAO.save(exRateReqDTO);
 
-        if (exRateRespDTO.isEmpty()) {
+        if (optExRateRespDTO.isEmpty()) {
             throw new RestErrorException(
                     SC_INTERNAL_SERVER_ERROR,
                     "Something happened with the database. Please try again later!"
@@ -68,7 +68,7 @@ public class ExchangeRatesController extends AbstractMainController {
         updateReversedExchangeRate(exRateReqDTO);
 
         resp.setStatus(SC_CREATED);
-        objectMapper.writeValue(resp.getWriter(), exRateRespDTO.get());
+        objectMapper.writeValue(resp.getWriter(), optExRateRespDTO.get());
     }
 
     private boolean isParametersValid(ExchangeRateReqDTO exRateReqDTO) {

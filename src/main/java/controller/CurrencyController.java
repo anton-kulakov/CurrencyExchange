@@ -21,15 +21,15 @@ public class CurrencyController extends AbstractMainController {
             throw new InvalidParamException();
         }
 
-        Optional<CurrencyDTO> currencyDTO = currencyDAO.getByCode(currencyReqDTO);
+        Optional<CurrencyDTO> optionalCurrencyDTO = currencyDAO.getByCode(currencyReqDTO);
 
-        if (currencyDTO.isEmpty()) {
+        if (optionalCurrencyDTO.isEmpty()) {
             throw new RestErrorException(
                     SC_NOT_FOUND,
                     "The requested currency was not found."
             );
         }
 
-        objectMapper.writeValue(resp.getWriter(), currencyDTO.get());
+        objectMapper.writeValue(resp.getWriter(), optionalCurrencyDTO.get());
     }
 }

@@ -35,9 +35,9 @@ public class CurrenciesController extends AbstractMainController {
             );
         }
 
-        Optional<CurrencyDTO> currencyDTO = currencyDAO.save(currencyReqDTO);
+        Optional<CurrencyDTO> optionalCurrencyDTO = currencyDAO.save(currencyReqDTO);
 
-        if (currencyDTO.isEmpty()) {
+        if (optionalCurrencyDTO.isEmpty()) {
             throw new RestErrorException(
                     SC_INTERNAL_SERVER_ERROR,
                     "Something happened with the database. Please try again later!"
@@ -45,7 +45,7 @@ public class CurrenciesController extends AbstractMainController {
         }
 
         resp.setStatus(SC_CREATED);
-        objectMapper.writeValue(resp.getWriter(), currencyDTO.get());
+        objectMapper.writeValue(resp.getWriter(), optionalCurrencyDTO.get());
     }
 
     private boolean isParametersValid(CurrencyDTO currencyReqDTO) {

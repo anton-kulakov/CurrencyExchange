@@ -26,7 +26,7 @@ public class ExchangeRateController extends AbstractMainController {
 
         ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);
 
-        if (!isCurrencyCodesValid(exRateReqDTO)) {
+        if (!isCurrencyPairFollowStandard(exRateReqDTO)) {
             throw new InvalidParamException();
         }
 
@@ -64,7 +64,7 @@ public class ExchangeRateController extends AbstractMainController {
         BigDecimal rate = getRateParameter(req);
         exRateReqDTO.setRate(rate);
 
-        if (!isCurrencyCodesValid(exRateReqDTO) || BigDecimal.ZERO.equals(exRateReqDTO.getRate())) {
+        if (!isCurrencyPairFollowStandard(exRateReqDTO) || BigDecimal.ZERO.equals(exRateReqDTO.getRate())) {
             throw new InvalidParamException();
         }
 
@@ -87,7 +87,7 @@ public class ExchangeRateController extends AbstractMainController {
         }
     }
 
-    private boolean isCurrencyCodesValid(ExchangeRateReqDTO exRateReqDTO) {
+    private boolean isCurrencyPairFollowStandard(ExchangeRateReqDTO exRateReqDTO) {
         return isCurrencyCodeFollowStandard(exRateReqDTO.getBaseCurrencyCode()) &&
                isCurrencyCodeFollowStandard(exRateReqDTO.getTargetCurrencyCode());
     }
