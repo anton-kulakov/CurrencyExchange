@@ -3,6 +3,7 @@ package controller;
 import dto.ExchangeRateReqDTO;
 import dto.ExchangeRateRespDTO;
 import exception.InvalidParamException;
+import exception.InvalidRequestException;
 import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,7 +21,7 @@ public class ExchangeRateController extends AbstractMainController {
     @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
-            throw new InvalidParamException();
+            throw new InvalidRequestException();
         }
 
         ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);
@@ -56,7 +57,7 @@ public class ExchangeRateController extends AbstractMainController {
     @Override
     protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
-            throw new InvalidParamException();
+            throw new InvalidRequestException();
         }
 
         ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);

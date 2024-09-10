@@ -7,6 +7,7 @@ import dto.ExchangeRateReqDTO;
 import dto.ExchangeRateRespDTO;
 import exception.DBException;
 import exception.InvalidParamException;
+import exception.InvalidRequestException;
 import exception.RestErrorException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -71,6 +72,8 @@ public abstract class AbstractMainController extends HttpServlet {
         } catch (RestErrorException e) {
             sendError(e.code, e.message, resp);
         } catch (InvalidParamException e) {
+            sendError(e.code, e.message, resp);
+        } catch (InvalidRequestException e) {
             sendError(e.code, e.message, resp);
         } catch (DBException e) {
             sendError(e.code, e.message, resp);
