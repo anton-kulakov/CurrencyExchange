@@ -17,12 +17,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Currency;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class AbstractMainController extends HttpServlet {
     protected ObjectMapper objectMapper;
     protected CurrencyDAO currencyDAO;
     protected ExchangeRateDAO exchangeRateDAO;
+    private static Set<String> currencyCodes;
 
     public void init() throws ServletException {
         super.init();
@@ -83,6 +87,8 @@ public abstract class AbstractMainController extends HttpServlet {
     }
 
 
+
+
     protected void sendError(int code, String message, HttpServletResponse resp) {
         try {
             resp.setStatus(code);
@@ -101,6 +107,17 @@ public abstract class AbstractMainController extends HttpServlet {
 
     protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
+    }
+
+    public static boolean isCurrencyCodeFollowStandard(String code) {
+        if (currencyCodes == null) {
+            Set<Currency> currencies = Currency.getAvailableCurrencies();
+            currencyCodes = currencies.stream()
+                    .map(Currency::getCurrencyCode)
+                    .collect(Collectors.toSet());
+        }
+
+        return currencyCodes.contains(code);
     }
 
     protected void updateReversedExchangeRate(ExchangeRateReqDTO exRateReqDTO) throws DBException {

@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
-import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 public class ExchangeRateController extends AbstractMainController {
 
@@ -88,8 +88,8 @@ public class ExchangeRateController extends AbstractMainController {
     }
 
     private boolean isCurrencyCodesValid(ExchangeRateReqDTO exRateReqDTO) {
-        return isCurrencyCodeValid(exRateReqDTO.getBaseCurrencyCode()) &&
-               isCurrencyCodeValid(exRateReqDTO.getTargetCurrencyCode());
+        return isCurrencyCodeFollowStandard(exRateReqDTO.getBaseCurrencyCode()) &&
+               isCurrencyCodeFollowStandard(exRateReqDTO.getTargetCurrencyCode());
     }
 
     private static BigDecimal getRateParameter(HttpServletRequest req) throws IOException {

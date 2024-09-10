@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
-import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
 public class ExchangeRatesController extends AbstractMainController {
     @Override
@@ -75,8 +74,8 @@ public class ExchangeRatesController extends AbstractMainController {
     private boolean isParametersValid(ExchangeRateReqDTO exRateReqDTO) {
         return !exRateReqDTO.getBaseCurrencyCode().isBlank() &&
                !exRateReqDTO.getTargetCurrencyCode().isBlank() &&
-               isCurrencyCodeValid(exRateReqDTO.getBaseCurrencyCode()) &&
-               isCurrencyCodeValid(exRateReqDTO.getTargetCurrencyCode()) &&
+               isCurrencyCodeFollowStandard(exRateReqDTO.getBaseCurrencyCode()) &&
+               isCurrencyCodeFollowStandard(exRateReqDTO.getTargetCurrencyCode()) &&
                !BigDecimal.ZERO.equals(exRateReqDTO.getRate());
     }
 }

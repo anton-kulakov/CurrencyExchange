@@ -11,9 +11,7 @@ import service.ExchangeService;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
 public class ExchangeController extends AbstractMainController {
     private final ExchangeService exchangeService = new ExchangeService();
@@ -50,8 +48,8 @@ public class ExchangeController extends AbstractMainController {
     private boolean isParametersValid(ExchangeReqDTO exchangeReqDTO) {
         return !exchangeReqDTO.getFrom().isBlank() &&
                !exchangeReqDTO.getTo().isBlank() &&
-               isCurrencyCodeValid(exchangeReqDTO.getFrom()) &&
-               isCurrencyCodeValid(exchangeReqDTO.getTo()) &&
+               isCurrencyCodeFollowStandard(exchangeReqDTO.getFrom()) &&
+               isCurrencyCodeFollowStandard(exchangeReqDTO.getTo()) &&
                !BigDecimal.ZERO.equals(exchangeReqDTO.getAmount());
     }
 }
