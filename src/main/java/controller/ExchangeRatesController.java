@@ -35,10 +35,7 @@ public class ExchangeRatesController extends AbstractMainController {
         ExchangeRateReqDTO exRateReqDTO = new ExchangeRateReqDTO(baseCurrencyCode, targetCurrencyCode, rate);
 
         if (!isParametersValid(exRateReqDTO)) {
-            throw new InvalidParamException(
-                    SC_BAD_REQUEST,
-                    "One or more parameters are not valid"
-            );
+            throw new InvalidParamException();
         }
 
         CurrencyDTO baseCurrencyDTO = new CurrencyDTO();

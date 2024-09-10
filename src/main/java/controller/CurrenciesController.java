@@ -26,10 +26,7 @@ public class CurrenciesController extends AbstractMainController {
         CurrencyDTO currencyReqDTO = new CurrencyDTO(code, name, sign);
 
         if (!isParametersValid(currencyReqDTO)) {
-            throw new InvalidParamException(
-                    SC_BAD_REQUEST,
-                    "One or more parameters are not valid"
-            );
+            throw new InvalidParamException();
         }
 
         if (currencyDAO.getByCode(currencyReqDTO).isPresent()) {

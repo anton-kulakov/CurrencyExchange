@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Optional;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static utils.CurrencyCodesValidator.isCurrencyCodeValid;
 
@@ -20,10 +19,7 @@ public class CurrencyController extends AbstractMainController {
         currencyReqDTO.setCode(currencyCode);
 
         if (currencyReqDTO.getCode().isBlank() || !isCurrencyCodeValid(currencyReqDTO.getCode())) {
-            throw new InvalidParamException(
-                    SC_BAD_REQUEST,
-                    "Currency code is invalid"
-            );
+            throw new InvalidParamException();
         }
 
         Optional<CurrencyDTO> currencyDTO = currencyDAO.getByCode(currencyReqDTO);

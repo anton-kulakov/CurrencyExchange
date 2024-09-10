@@ -20,19 +20,13 @@ public class ExchangeRateController extends AbstractMainController {
     @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
-            throw new InvalidParamException(
-                    SC_BAD_REQUEST,
-                    "The request is not valid"
-            );
+            throw new InvalidParamException();
         }
 
         ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);
 
         if (!isCurrencyCodesValid(exRateReqDTO)) {
-            throw new InvalidParamException(
-                    SC_BAD_REQUEST,
-                    "One or more parameters are not valid"
-            );
+            throw new InvalidParamException();
         }
 
         Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
@@ -62,10 +56,7 @@ public class ExchangeRateController extends AbstractMainController {
     @Override
     protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
-            throw new InvalidParamException(
-                    SC_BAD_REQUEST,
-                    "The request is not valid"
-            );
+            throw new InvalidParamException();
         }
 
         ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);
@@ -73,10 +64,7 @@ public class ExchangeRateController extends AbstractMainController {
         exRateReqDTO.setRate(rate);
 
         if (!isCurrencyCodesValid(exRateReqDTO) || BigDecimal.ZERO.equals(exRateReqDTO.getRate())) {
-            throw new InvalidParamException(
-                    SC_BAD_REQUEST,
-                    "One or more parameters are not valid"
-            );
+            throw new InvalidParamException();
         }
 
         Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);

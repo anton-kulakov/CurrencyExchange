@@ -32,10 +32,7 @@ public class ExchangeController extends AbstractMainController {
         ExchangeReqDTO exchangeReqDTO = new ExchangeReqDTO(from, to, amount);
 
         if (!isParametersValid(exchangeReqDTO)) {
-            throw new InvalidParamException(
-                    SC_BAD_REQUEST,
-                    "One or more parameters are not valid"
-            );
+            throw new InvalidParamException();
         }
 
         Optional<ExchangeRespDTO> optionalExchangeRespDTO = exchangeService.makeExchange(exchangeReqDTO);
