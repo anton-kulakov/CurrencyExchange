@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 public class ExchangeRateController extends AbstractMainController {
@@ -34,8 +33,8 @@ public class ExchangeRateController extends AbstractMainController {
 
         if (optionalExRateRespDTO.isEmpty()) {
             throw new RestErrorException(
-                    SC_INTERNAL_SERVER_ERROR,
-                    "Something happened with the database. Please try again later!"
+                    SC_NOT_FOUND,
+                    "The requested exchange rate could not be found in the database"
             );
         }
 

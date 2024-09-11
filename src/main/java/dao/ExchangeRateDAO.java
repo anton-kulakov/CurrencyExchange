@@ -46,7 +46,7 @@ public class ExchangeRateDAO {
             SET rate = ?
             WHERE base_currency_id = ? AND target_currency_id = ?
             """;
-    private final static String GET_BY_CODE_SQL = GET_ALL_SQL + """
+    private final static String GET_BY_CODES_SQL = GET_ALL_SQL + """
             WHERE bc.code = ? AND tc.code = ?
             """;
 
@@ -122,7 +122,7 @@ public class ExchangeRateDAO {
 
     public Optional<ExchangeRateRespDTO> getByCodes(ExchangeRateReqDTO exRateReqDTO) throws DBException {
         try (Connection connection = ConnectionManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(GET_BY_CODE_SQL)) {
+             PreparedStatement statement = connection.prepareStatement(GET_BY_CODES_SQL)) {
 
             statement.setString(1, exRateReqDTO.getBaseCurrencyCode());
             statement.setString(2, exRateReqDTO.getTargetCurrencyCode());
