@@ -14,6 +14,7 @@ import java.util.Optional;
 public class ExchangeService {
     ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
     private final ModelMapper modelMapper;
+
     public ExchangeService() {
 
         this.modelMapper = new ModelMapper();

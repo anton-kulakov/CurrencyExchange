@@ -111,16 +111,16 @@ public class CurrencyDAO {
     }
 
     private static Currency createCurrency(ResultSet resultSet) throws DBException {
-         try {
-             return new Currency(
-                     resultSet.getInt("id"),
-                     resultSet.getString("code"),
-                     resultSet.getString("full_name"),
-                     resultSet.getString("sign")
-             );
-         } catch (SQLException e) {
-             throw new DBException();
-         }
+        try {
+            return new Currency(
+                    resultSet.getInt("id"),
+                    resultSet.getString("code"),
+                    resultSet.getString("full_name"),
+                    resultSet.getString("sign")
+            );
+        } catch (SQLException e) {
+            throw new DBException();
+        }
     }
 
     public static CurrencyDAO getInstance() {
