@@ -11,7 +11,7 @@ import service.ExchangeService;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 public class ExchangeController extends AbstractMainController {
     private final ExchangeService exchangeService = new ExchangeService();
@@ -37,8 +37,8 @@ public class ExchangeController extends AbstractMainController {
 
         if (optionalExchangeRespDTO.isEmpty()) {
             throw new RestErrorException(
-                    SC_INTERNAL_SERVER_ERROR,
-                    "Something happened with the database. Please try again later!"
+                    SC_NOT_FOUND,
+                    "There is no exchange rate available for the requested currencies"
             );
         }
 
