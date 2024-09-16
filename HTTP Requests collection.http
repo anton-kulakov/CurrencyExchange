@@ -4,8 +4,11 @@ GET http://localhost:8080/currencies
 ### Get /currency/RUB
 GET http://localhost:8080/currency/RUB
 
-### Post /currencies/AMD
-POST http://localhost:8080/currencies/?name=Armenian Dram&code=AMD&sign=֏
+### Post /currencies
+POST http://localhost:8080/currencies
+Content-Type: application/x-www-form-urlencoded
+
+name=Armenian Dram&code=AMD&sign=֏
 
 ### Get /exchangeRates
 GET http://localhost:8080/exchangeRates
@@ -14,7 +17,10 @@ GET http://localhost:8080/exchangeRates
 GET http://localhost:8080/exchangeRate/RUBUSD
 
 ### Post /exchangeRates/GELTRY
-POST http://localhost:8080/exchangeRates?baseCurrencyCode=GEL&targetCurrencyCode=TRY&rate=55.55
+POST http://localhost:8080/exchangeRates
+Content-Type: application/x-www-form-urlencoded
+
+baseCurrencyCode=GEL&targetCurrencyCode=TRY&rate=55.55
 
 ### Patch /exchangeRate/GELTRY
 PATCH http://localhost:8080/exchangeRate/GELTRY
