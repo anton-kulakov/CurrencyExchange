@@ -109,7 +109,7 @@ public class ExchangeRateController extends AbstractMainController {
 
             String[] keyValue = param.split("=");
 
-            if (keyValue[0].equals("rate")) {
+            if (keyValue.length == 2 && keyValue[0].equals("rate")) {
                 stringRate = keyValue[1];
             }
         }

@@ -2,11 +2,14 @@ package controller;
 
 import dto.CurrencyDTO;
 import exception.InvalidParamException;
+import exception.InvalidRequestException;
 import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
 
@@ -18,6 +21,10 @@ public class CurrenciesController extends AbstractMainController {
 
     @Override
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        if (!isRequestValid(req.getParameterMap())) {
+            throw new InvalidRequestException();
+        }
+
         String code = req.getParameter("code");
         String name = req.getParameter("name");
         String sign = req.getParameter("sign");
@@ -46,6 +53,12 @@ public class CurrenciesController extends AbstractMainController {
 
         resp.setStatus(SC_CREATED);
         objectMapper.writeValue(resp.getWriter(), optionalCurrencyDTO.get());
+    }
+
+    private boolean isRequestValid(Map<String, String[]> parameterMap) {
+        Set<String> requiredParams = Set.of("code", "name", "sign");
+
+        return parameterMap.keySet().containsAll(requiredParams);
     }
 
     private boolean isParametersValid(CurrencyDTO currencyReqDTO) {

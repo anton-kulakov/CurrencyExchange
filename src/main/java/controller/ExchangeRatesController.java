@@ -4,12 +4,15 @@ import dto.CurrencyDTO;
 import dto.ExchangeRateReqDTO;
 import dto.ExchangeRateRespDTO;
 import exception.InvalidParamException;
+import exception.InvalidRequestException;
 import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
 
@@ -21,6 +24,10 @@ public class ExchangeRatesController extends AbstractMainController {
 
     @Override
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        if (!isRequestValid(req.getParameterMap())) {
+            throw new InvalidRequestException();
+        }
+
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
         String stringRate = req.getParameter("rate");
@@ -69,6 +76,12 @@ public class ExchangeRatesController extends AbstractMainController {
 
         resp.setStatus(SC_CREATED);
         objectMapper.writeValue(resp.getWriter(), optExRateRespDTO.get());
+    }
+
+    private boolean isRequestValid(Map<String, String[]> parameterMap) {
+        Set<String> requiredParams = Set.of("baseCurrencyCode", "targetCurrencyCode", "rate");
+
+        return parameterMap.keySet().containsAll(requiredParams);
     }
 
     private boolean isParametersValid(ExchangeRateReqDTO exRateReqDTO) {
