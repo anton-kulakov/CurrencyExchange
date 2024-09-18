@@ -8,7 +8,7 @@ GET http://localhost:8080/currency/RUB
 POST http://localhost:8080/currencies
 Content-Type: application/x-www-form-urlencoded
 
-name=Armenian Dram&code=AMD&sign=֏
+name=Tenge&code=KZT&sign=₸
 
 ### Get /exchangeRates
 GET http://localhost:8080/exchangeRates
@@ -16,17 +16,17 @@ GET http://localhost:8080/exchangeRates
 ### Get /exchangeRate/RUBUSD
 GET http://localhost:8080/exchangeRate/RUBUSD
 
-### Post /exchangeRates/GELTRY
+### Post /exchangeRates/CNYUSD
 POST http://localhost:8080/exchangeRates
 Content-Type: application/x-www-form-urlencoded
 
-baseCurrencyCode=GEL&targetCurrencyCode=TRY&rate=55.55
+baseCurrencyCode=CNY&targetCurrencyCode=USD&rate=0.14092
 
-### Patch /exchangeRate/GELTRY
-PATCH http://localhost:8080/exchangeRate/GELTRY
+### Patch /exchangeRate/CNYUSD
+PATCH http://localhost:8080/exchangeRate/CNYUSD
 Content-Type: application/x-www-form-urlencoded
 
-rate=15.15
+rate=10
 
-### GET /exchange?from=GEL&to=TRY&amount=10
-GET http://localhost:8080/exchange?from=GEL&to=TRY&amount=10
+### GET /exchange?from=USD&to=RUB&amount=10
+GET http://localhost:8080/exchange?from=USD&to=RUB&amount=10
