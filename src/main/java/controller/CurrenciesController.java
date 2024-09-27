@@ -31,6 +31,13 @@ public class CurrenciesController extends AbstractMainController {
 
         CurrencyDTO currencyReqDTO = new CurrencyDTO(code, name, sign);
 
+        if (!isCurrencyCodeFollowStandard(currencyReqDTO.getCode())) {
+            throw new RestErrorException(
+                    SC_BAD_REQUEST,
+                    "The currency code must follow the ISO 4217 standard"
+                    );
+        }
+
         if (!isParametersValid(currencyReqDTO)) {
             throw new InvalidParamException();
         }
@@ -64,7 +71,6 @@ public class CurrenciesController extends AbstractMainController {
     private boolean isParametersValid(CurrencyDTO currencyReqDTO) {
         return !currencyReqDTO.getCode().isBlank() &&
                !currencyReqDTO.getName().isBlank() &&
-               !currencyReqDTO.getSign().isBlank() &&
-               isCurrencyCodeFollowStandard(currencyReqDTO.getCode());
+               !currencyReqDTO.getSign().isBlank();
     }
 }
