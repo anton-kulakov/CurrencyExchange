@@ -44,6 +44,13 @@ public class ExchangeRatesController extends AbstractMainController {
             throw new InvalidParamException();
         }
 
+        if (exRateReqDTO.getRate().compareTo(ExchangeRateReqDTO.getMinPositiveRate()) < 0) {
+            throw new RestErrorException(
+                    SC_BAD_REQUEST,
+                    "The rate must be at least " + ExchangeRateReqDTO.getMinPositiveRate()
+            );
+        }
+
         CurrencyDTO baseCurrencyDTO = new CurrencyDTO();
         CurrencyDTO targetCurrencyDTO = new CurrencyDTO();
         baseCurrencyDTO.setCode(baseCurrencyCode);

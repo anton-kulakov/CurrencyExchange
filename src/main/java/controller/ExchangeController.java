@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 public class ExchangeController extends AbstractMainController {
@@ -38,6 +39,13 @@ public class ExchangeController extends AbstractMainController {
 
         if (!isParametersValid(exchangeReqDTO)) {
             throw new InvalidParamException();
+        }
+
+        if (exchangeReqDTO.getAmount().compareTo(ExchangeReqDTO.getMinPositiveAmount()) < 0) {
+            throw new RestErrorException(
+                    SC_BAD_REQUEST,
+                    "The amount must be at least " + ExchangeReqDTO.getMinPositiveAmount()
+            );
         }
 
         Optional<ExchangeRespDTO> optionalExchangeRespDTO = exchangeService.makeExchange(exchangeReqDTO);

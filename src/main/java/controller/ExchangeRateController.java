@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 public class ExchangeRateController extends AbstractMainController {
@@ -65,6 +66,13 @@ public class ExchangeRateController extends AbstractMainController {
 
         if (!isCurrencyPairFollowStandard(exRateReqDTO) || BigDecimal.ZERO.equals(exRateReqDTO.getRate())) {
             throw new InvalidParamException();
+        }
+
+        if (exRateReqDTO.getRate().compareTo(ExchangeRateReqDTO.getMinPositiveRate()) < 0) {
+            throw new RestErrorException(
+                   SC_BAD_REQUEST,
+                    "The rate must be at least " + ExchangeRateReqDTO.getMinPositiveRate()
+            );
         }
 
         Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
