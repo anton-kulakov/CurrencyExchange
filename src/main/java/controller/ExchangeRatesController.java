@@ -36,6 +36,13 @@ public class ExchangeRatesController extends AbstractMainController {
             stringRate = String.valueOf(0);
         }
 
+        if (baseCurrencyCode.equals(targetCurrencyCode)) {
+            throw new RestErrorException(
+                    SC_BAD_REQUEST,
+                    "The base and target currencies should be different"
+            );
+        }
+
         BigDecimal rate = new BigDecimal(stringRate);
 
         ExchangeRateReqDTO exRateReqDTO = new ExchangeRateReqDTO(baseCurrencyCode, targetCurrencyCode, rate);
