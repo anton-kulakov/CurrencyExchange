@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class CurrencyDAO {
     private final static CurrencyDAO INSTANCE = new CurrencyDAO();
-    private final ModelMapper modelMapper = new ModelMapper();
+    private final static ModelMapper modelMapper = new ModelMapper();
     private final static String SAVE_SQL = """
             INSERT INTO currencies
             (code, full_name, sign) 
