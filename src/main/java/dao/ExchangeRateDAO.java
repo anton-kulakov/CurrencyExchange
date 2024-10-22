@@ -59,6 +59,7 @@ public class ExchangeRateDAO {
             baseCurrencyDTO.setCode(exRateReqDTO.getBaseCurrencyCode());
             targetCurrencyDTO.setCode(exRateReqDTO.getTargetCurrencyCode());
 
+            connection.setAutoCommit(false);
             Optional<CurrencyDTO> optBaseCurrencyDTO = currencyDAO.getByCode(baseCurrencyDTO);
             Optional<CurrencyDTO> optTargetCurrencyDTO = currencyDAO.getByCode(targetCurrencyDTO);
 
@@ -76,6 +77,7 @@ public class ExchangeRateDAO {
 
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
+            connection.commit();
 
             ExchangeRate exchangeRate = null;
             ExchangeRateRespDTO exRateRespDTO = null;
