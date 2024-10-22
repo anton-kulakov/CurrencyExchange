@@ -51,8 +51,8 @@ public class ExchangeRateDAO {
             """;
 
     public Optional<ExchangeRateRespDTO> save(ExchangeRateReqDTO exRateReqDTO) throws DBException {
-        try (Connection connection = ConnectionManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+        Connection connection = ConnectionManager.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
             CurrencyDTO baseCurrencyDTO = new CurrencyDTO();
             CurrencyDTO targetCurrencyDTO = new CurrencyDTO();
@@ -77,7 +77,6 @@ public class ExchangeRateDAO {
 
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
-            connection.commit();
 
             ExchangeRate exchangeRate = null;
             ExchangeRateRespDTO exRateRespDTO = null;
@@ -94,10 +93,23 @@ public class ExchangeRateDAO {
             if (exchangeRate != null) {
                 exRateRespDTO = modelMapper.map(exchangeRate, ExchangeRateRespDTO.class);
             }
+            connection.commit();
 
             return Optional.ofNullable(exRateRespDTO);
         } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+
             throw new DBException();
+        } finally {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
