@@ -7,15 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CurrencyDTO {
-    int id;
+public class CurrencyRequestDTO {
     String code;
     String name;
     String sign;
-
-    public CurrencyDTO(String code, String name, String sign) {
-        this.code = code;
-        this.name = name;
-        this.sign = sign;
-    }
 }

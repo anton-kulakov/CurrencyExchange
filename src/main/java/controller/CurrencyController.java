@@ -1,35 +1,30 @@
 package controller;
 
-import dto.CurrencyDTO;
+import entity.Currency;
 import exception.InvalidParamException;
 import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.Optional;
-
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 public class CurrencyController extends AbstractMainController {
     @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         String currencyCode = req.getPathInfo().replaceAll("/", "");
-        CurrencyDTO currencyReqDTO = new CurrencyDTO();
-        currencyReqDTO.setCode(currencyCode);
 
-        if (currencyReqDTO.getCode().isBlank() || !isCurrencyCodeFollowStandard(currencyReqDTO.getCode())) {
+        if (currencyCode.isBlank()) {
             throw new InvalidParamException();
         }
 
-        Optional<CurrencyDTO> optionalCurrencyDTO = currencyDAO.getByCode(currencyReqDTO);
-
-        if (optionalCurrencyDTO.isEmpty()) {
-            throw new RestErrorException(
-                    SC_NOT_FOUND,
-                    "The requested currency was not found."
-            );
+        if (!isCurrencyCodeFollowStandard(currencyCode)) {
+            throw new RestErrorException(SC_BAD_REQUEST, "The currency code must follow the ISO 4217 standard");
         }
 
-        objectMapper.writeValue(resp.getWriter(), optionalCurrencyDTO.get());
+        Currency currency = currencyDAO.getByCode(currencyCode)
+                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND, "The requested currency was not found."));
+
+        objectMapper.writeValue(resp.getWriter(), currency);
     }
 }

@@ -1,7 +1,7 @@
 package controller;
 
 import dto.ExchangeRateReqDTO;
-import dto.ExchangeRateRespDTO;
+import entity.ExchangeRate;
 import exception.InvalidParamException;
 import exception.InvalidRequestException;
 import exception.RestErrorException;
@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
@@ -30,16 +29,10 @@ public class ExchangeRateController extends AbstractMainController {
             throw new InvalidParamException();
         }
 
-        Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
+        ExchangeRate exchangeRate = exchangeRateDAO.getByCodes(exRateReqDTO.getBaseCurrencyCode(), exRateReqDTO.getTargetCurrencyCode())
+                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND, "The requested exchange rate could not be found in the database"));
 
-        if (optionalExRateRespDTO.isEmpty()) {
-            throw new RestErrorException(
-                    SC_NOT_FOUND,
-                    "The requested exchange rate could not be found in the database"
-            );
-        }
-
-        objectMapper.writeValue(resp.getWriter(), optionalExRateRespDTO.get());
+        objectMapper.writeValue(resp.getWriter(), exchangeRate);
     }
 
     private static ExchangeRateReqDTO getExRateReqDTO(HttpServletRequest req) {
@@ -69,28 +62,17 @@ public class ExchangeRateController extends AbstractMainController {
         }
 
         if (exRateReqDTO.getRate().compareTo(ExchangeRateReqDTO.getMinPositiveRate()) < 0) {
-            throw new RestErrorException(
-                   SC_BAD_REQUEST,
-                    "The rate must be at least " + ExchangeRateReqDTO.getMinPositiveRate()
-            );
+            throw new RestErrorException(SC_BAD_REQUEST, "The rate must be at least " + ExchangeRateReqDTO.getMinPositiveRate());
         }
 
-        Optional<ExchangeRateRespDTO> optionalExRateRespDTO = exchangeRateDAO.getByCodes(exRateReqDTO);
+        ExchangeRate exchangeRate = exchangeRateDAO.getByCodes(exRateReqDTO.getBaseCurrencyCode(), exRateReqDTO.getTargetCurrencyCode())
+                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND, "The requested exchange rate could not be found in the database"));
 
-        if (optionalExRateRespDTO.isEmpty()) {
-            throw new RestErrorException(
-                    SC_NOT_FOUND,
-                    "The requested exchange rate could not be found in the database"
-            );
-        }
-
-        ExchangeRateRespDTO exRateRespDTO = optionalExRateRespDTO.get();
-        exRateRespDTO.setRate(exRateReqDTO.getRate());
-
+        exchangeRate.setRate(exRateReqDTO.getRate());
         updateReversedExchangeRate(exRateReqDTO);
 
-        if (exchangeRateDAO.update(exRateRespDTO)) {
-            objectMapper.writeValue(resp.getWriter(), exRateRespDTO);
+        if (exchangeRateDAO.update(exchangeRate)) {
+            objectMapper.writeValue(resp.getWriter(), exchangeRate);
         }
     }
 

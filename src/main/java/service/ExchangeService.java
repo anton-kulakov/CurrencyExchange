@@ -1,9 +1,12 @@
 package service;
 
 import dao.ExchangeRateDAO;
-import dto.*;
-import entity.Currency;
+import dto.ExchangeRateReqDTO;
+import dto.ExchangeReqDTO;
+import dto.ExchangeRespDTO;
+import entity.ExchangeRate;
 import exception.DBException;
+import exception.RestErrorException;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
 
@@ -12,6 +15,7 @@ import java.math.RoundingMode;
 import java.util.Optional;
 
 public class ExchangeService {
+    ExchangeRateService exchangeRateService = new ExchangeRateService();
     ExchangeRateDAO exchangeRateDAO = ExchangeRateDAO.getInstance();
     private final ModelMapper modelMapper;
 
@@ -30,8 +34,8 @@ public class ExchangeService {
         modelMapper.addMappings(exchangeMap);
     }
 
-    public Optional<ExchangeRespDTO> makeExchange(ExchangeReqDTO exchangeReqDTO) throws DBException {
-        Optional<ExchangeRateRespDTO> optionalExchangeRate = getOptionalExchangeRate(exchangeReqDTO);
+    public Optional<ExchangeRespDTO> makeExchange(ExchangeReqDTO exchangeReqDTO) throws DBException, RestErrorException {
+        Optional<ExchangeRate> optionalExchangeRate = getOptionalExchangeRate(exchangeReqDTO);
         ExchangeRespDTO exchangeRespDTO = null;
 
         if (optionalExchangeRate.isPresent()) {
@@ -50,8 +54,8 @@ public class ExchangeService {
         return Optional.ofNullable(exchangeRespDTO);
     }
 
-    private Optional<ExchangeRateRespDTO> getOptionalExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
-        Optional<ExchangeRateRespDTO> optionalExchangeRate = getDirectExchangeRate(exchangeReqDTO);
+    private Optional<ExchangeRate> getOptionalExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException, RestErrorException {
+        Optional<ExchangeRate> optionalExchangeRate = getDirectExchangeRate(exchangeReqDTO);
 
         if (optionalExchangeRate.isEmpty()) {
             optionalExchangeRate = getFromReversedExchangeRate(exchangeReqDTO);
@@ -64,29 +68,20 @@ public class ExchangeService {
         return optionalExchangeRate;
     }
 
-    private Optional<ExchangeRateRespDTO> getDirectExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
+    private Optional<ExchangeRate> getDirectExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
         ExchangeRateReqDTO directExchangeRate = modelMapper.map(exchangeReqDTO, ExchangeRateReqDTO.class);
 
-        return exchangeRateDAO.getByCodes(directExchangeRate);
+        return exchangeRateDAO.getByCodes(directExchangeRate.getBaseCurrencyCode(), directExchangeRate.getTargetCurrencyCode());
     }
 
-    private Optional<ExchangeRateRespDTO> getFromReversedExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
-        String from = exchangeReqDTO.getFrom();
-        String to = exchangeReqDTO.getTo();
-
-        exchangeReqDTO.setFrom(to);
-        exchangeReqDTO.setTo(from);
-
-        ExchangeRateReqDTO exRateReqDTO = modelMapper.map(exchangeReqDTO, ExchangeRateReqDTO.class);
-
-        Optional<ExchangeRateRespDTO> reversedExchangeRate = exchangeRateDAO.getByCodes(exRateReqDTO);
-        Optional<ExchangeRateRespDTO> directExchangeRate = Optional.empty();
+    private Optional<ExchangeRate> getFromReversedExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException, RestErrorException {
+        Optional<ExchangeRate> reversedExchangeRate = exchangeRateDAO.getByCodes(exchangeReqDTO.getTo(), exchangeReqDTO.getFrom());
+        Optional<ExchangeRate> directExchangeRate = Optional.empty();
 
         if (reversedExchangeRate.isPresent()) {
-
-            directExchangeRate = exchangeRateDAO.save(new ExchangeRateReqDTO(
-                    from,
-                    to,
+            directExchangeRate = exchangeRateService.preserve(new ExchangeRateReqDTO(
+                    exchangeReqDTO.getFrom(),
+                    exchangeReqDTO.getTo(),
                     BigDecimal.ONE.divide(reversedExchangeRate.get().getRate(), 6, RoundingMode.HALF_UP))
             );
         }
@@ -94,39 +89,27 @@ public class ExchangeService {
         return directExchangeRate;
     }
 
-    private Optional<ExchangeRateRespDTO> getFromCrossExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
-        ExchangeRateReqDTO exRateReqDTOFrom = new ExchangeRateReqDTO();
-        ExchangeRateReqDTO exRateReqDTOTo = new ExchangeRateReqDTO();
+    private Optional<ExchangeRate> getFromCrossExchangeRate(ExchangeReqDTO exchangeReqDTO) throws DBException {
+        String baseCurrencyCode = "USD";
 
-        exRateReqDTOFrom.setBaseCurrencyCode("USD");
-        exRateReqDTOFrom.setTargetCurrencyCode(exchangeReqDTO.getFrom());
+        Optional<ExchangeRate> optExchangeRateUSDFrom = exchangeRateDAO.getByCodes(baseCurrencyCode, exchangeReqDTO.getFrom());
+        Optional<ExchangeRate> optExchangeRateUSDTo = exchangeRateDAO.getByCodes(baseCurrencyCode, exchangeReqDTO.getTo());
 
-        exRateReqDTOTo.setBaseCurrencyCode("USD");
-        exRateReqDTOTo.setTargetCurrencyCode(exchangeReqDTO.getTo());
+        ExchangeRate exchangeRate = null;
 
-        Optional<ExchangeRateRespDTO> optionalExchangeRateUSDFrom = exchangeRateDAO.getByCodes(exRateReqDTOFrom);
-        Optional<ExchangeRateRespDTO> optionalExchangeRateUSDTo = exchangeRateDAO.getByCodes(exRateReqDTOTo);
-
-        ExchangeRateRespDTO exchangeRateRespDTO = null;
-
-        if (optionalExchangeRateUSDFrom.isPresent() && optionalExchangeRateUSDTo.isPresent()) {
-            BigDecimal rate = optionalExchangeRateUSDFrom.get().getRate().divide(
-                    optionalExchangeRateUSDTo.get().getRate(),
+        if (optExchangeRateUSDFrom.isPresent() && optExchangeRateUSDTo.isPresent()) {
+            BigDecimal rate = optExchangeRateUSDTo.get().getRate().divide(
+                    optExchangeRateUSDFrom.get().getRate(),
                     6,
                     RoundingMode.HALF_UP
             );
 
-            CurrencyDTO from = new CurrencyDTO();
-            CurrencyDTO to = new CurrencyDTO();
-            from.setCode(exchangeReqDTO.getFrom());
-            to.setCode(exchangeReqDTO.getTo());
-
-            exchangeRateRespDTO = new ExchangeRateRespDTO();
-            exchangeRateRespDTO.setBaseCurrency(modelMapper.map(from, Currency.class));
-            exchangeRateRespDTO.setTargetCurrency(modelMapper.map(to, Currency.class));
-            exchangeRateRespDTO.setRate(rate);
+            exchangeRate = new ExchangeRate();
+            exchangeRate.setBaseCurrency(optExchangeRateUSDFrom.get().getBaseCurrency());
+            exchangeRate.setTargetCurrency(optExchangeRateUSDTo.get().getBaseCurrency());
+            exchangeRate.setRate(rate);
         }
 
-        return Optional.ofNullable(exchangeRateRespDTO);
+        return Optional.ofNullable(exchangeRate);
     }
 }

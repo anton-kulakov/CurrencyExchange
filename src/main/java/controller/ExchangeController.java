@@ -11,7 +11,6 @@ import service.ExchangeService;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -28,13 +27,8 @@ public class ExchangeController extends AbstractMainController {
 
         String from = req.getParameter("from");
         String to = req.getParameter("to");
-        String stringAmount = req.getParameter("amount").replaceAll(",", ".");
+        BigDecimal amount = getAmount(req);
 
-        if (stringAmount.isBlank()) {
-            stringAmount = String.valueOf(0);
-        }
-
-        BigDecimal amount = new BigDecimal(stringAmount);
         ExchangeReqDTO exchangeReqDTO = new ExchangeReqDTO(from, to, amount);
 
         if (!isParametersValid(exchangeReqDTO)) {
@@ -42,22 +36,13 @@ public class ExchangeController extends AbstractMainController {
         }
 
         if (exchangeReqDTO.getAmount().compareTo(ExchangeReqDTO.getMinPositiveAmount()) < 0) {
-            throw new RestErrorException(
-                    SC_BAD_REQUEST,
-                    "The amount must be at least " + ExchangeReqDTO.getMinPositiveAmount()
-            );
+            throw new RestErrorException(SC_BAD_REQUEST, "The amount must be at least " + ExchangeReqDTO.getMinPositiveAmount());
         }
 
-        Optional<ExchangeRespDTO> optionalExchangeRespDTO = exchangeService.makeExchange(exchangeReqDTO);
+        ExchangeRespDTO exchangeRespDTO = exchangeService.makeExchange(exchangeReqDTO)
+                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND, "There is no exchange rate available for the requested currencies"));
 
-        if (optionalExchangeRespDTO.isEmpty()) {
-            throw new RestErrorException(
-                    SC_NOT_FOUND,
-                    "There is no exchange rate available for the requested currencies"
-            );
-        }
-
-        objectMapper.writeValue(resp.getWriter(), optionalExchangeRespDTO.get());
+        objectMapper.writeValue(resp.getWriter(), exchangeRespDTO);
     }
 
     private boolean isRequestValid(Map<String, String[]> parameterMap) {
@@ -65,6 +50,17 @@ public class ExchangeController extends AbstractMainController {
 
         return parameterMap.keySet().containsAll(requiredParams);
     }
+
+    private BigDecimal getAmount(HttpServletRequest req) {
+        String stringAmount = req.getParameter("amount").replaceAll(",", ".");
+
+        if (stringAmount.isBlank()) {
+            stringAmount = String.valueOf(0);
+        }
+
+        return new BigDecimal(stringAmount);
+    }
+
     private boolean isParametersValid(ExchangeReqDTO exchangeReqDTO) {
         return !exchangeReqDTO.getFrom().isBlank() &&
                !exchangeReqDTO.getTo().isBlank() &&

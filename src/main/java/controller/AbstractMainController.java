@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CurrencyDAO;
 import dao.ExchangeRateDAO;
 import dto.ExchangeRateReqDTO;
-import dto.ExchangeRateRespDTO;
+import entity.ExchangeRate;
 import exception.DBException;
 import exception.InvalidParamException;
 import exception.InvalidRequestException;
@@ -126,17 +126,11 @@ public abstract class AbstractMainController extends HttpServlet {
     }
 
     protected void updateReversedExchangeRate(ExchangeRateReqDTO exRateReqDTO) throws DBException {
-        ExchangeRateReqDTO reversedExRateReqDTO = new ExchangeRateReqDTO(
-                exRateReqDTO.getTargetCurrencyCode(),
-                exRateReqDTO.getBaseCurrencyCode(),
-                BigDecimal.ONE.divide(exRateReqDTO.getRate(), 6, RoundingMode.HALF_UP)
-        );
+        Optional<ExchangeRate> optReversedExchangeRate = exchangeRateDAO.getByCodes(exRateReqDTO.getTargetCurrencyCode(), exRateReqDTO.getBaseCurrencyCode());
 
-        Optional<ExchangeRateRespDTO> optReversedExRateRespDTO = exchangeRateDAO.getByCodes(reversedExRateReqDTO);
-
-        if (optReversedExRateRespDTO.isPresent()) {
-            optReversedExRateRespDTO.get().setRate(reversedExRateReqDTO.getRate());
-            exchangeRateDAO.update(optReversedExRateRespDTO.get());
+        if (optReversedExchangeRate.isPresent()) {
+            optReversedExchangeRate.get().setRate(BigDecimal.ONE.divide(exRateReqDTO.getRate(), 6, RoundingMode.HALF_UP));
+            exchangeRateDAO.update(optReversedExchangeRate.get());
         }
     }
 }
