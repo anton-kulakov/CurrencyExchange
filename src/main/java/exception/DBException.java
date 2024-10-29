@@ -1,8 +1,9 @@
 package exception;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class DBException extends Exception {
-    public final int code = SC_INTERNAL_SERVER_ERROR;
-    public final String message = "Something happened with the database. Please try again later!";
+    public final int code;
+    public final String message;
 }

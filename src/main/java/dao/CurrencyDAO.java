@@ -11,6 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+
 public class CurrencyDAO {
     private final static CurrencyDAO INSTANCE = new CurrencyDAO();
     private final static String SAVE_SQL = """
@@ -27,6 +29,8 @@ public class CurrencyDAO {
              """;
 
     public Optional<Currency> save(Currency currency) throws DBException {
+        String currencyCode = currency.getCode();
+
         try (var connection = ConnectionManager.getConnection();
              var statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -45,7 +49,8 @@ public class CurrencyDAO {
 
             return Optional.ofNullable(currency);
         } catch (SQLException e) {
-            throw new DBException();
+            throw new DBException(SC_INTERNAL_SERVER_ERROR,
+                    String.format("The currency %s could not be saved. Something happened with the database. Please try again later!", currencyCode));
         }
     }
 
@@ -62,7 +67,7 @@ public class CurrencyDAO {
 
             return currencies;
         } catch (SQLException e) {
-            throw new DBException();
+            throw new DBException(SC_INTERNAL_SERVER_ERROR, "Unable to retrieve a list of currencies");
         }
     }
 
@@ -82,7 +87,8 @@ public class CurrencyDAO {
 
             return Optional.ofNullable(currency);
         } catch (SQLException e) {
-            throw new DBException();
+            throw new DBException(SC_INTERNAL_SERVER_ERROR,
+                    String.format("The attempt to retrieve information about currency %s was unsuccessful", code));
         }
     }
 
@@ -95,7 +101,7 @@ public class CurrencyDAO {
                     resultSet.getString("sign")
             );
         } catch (SQLException e) {
-            throw new DBException();
+            throw new DBException(SC_INTERNAL_SERVER_ERROR, "Something happened with the database. Please try again later!");
         }
     }
 

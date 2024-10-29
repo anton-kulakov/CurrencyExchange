@@ -26,7 +26,7 @@ public class ExchangeRatesController extends AbstractMainController {
     @Override
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (!isRequestValid(req.getParameterMap())) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }
 
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
@@ -40,7 +40,7 @@ public class ExchangeRatesController extends AbstractMainController {
         ExchangeRateReqDTO exRateReqDTO = new ExchangeRateReqDTO(baseCurrencyCode, targetCurrencyCode, rate);
 
         if (!isParametersValid(exRateReqDTO)) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(SC_BAD_REQUEST, "One or more parameters are not valid");
         }
 
         if (exRateReqDTO.getRate().compareTo(ExchangeRateReqDTO.getMinPositiveRate()) < 0) {

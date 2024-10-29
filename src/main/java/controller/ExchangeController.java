@@ -22,7 +22,7 @@ public class ExchangeController extends AbstractMainController {
     @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (!isRequestValid(req.getParameterMap())) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }
 
         String from = req.getParameter("from");
@@ -32,7 +32,7 @@ public class ExchangeController extends AbstractMainController {
         ExchangeReqDTO exchangeReqDTO = new ExchangeReqDTO(from, to, amount);
 
         if (!isParametersValid(exchangeReqDTO)) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(SC_BAD_REQUEST, "One or more parameters are not valid");
         }
 
         if (exchangeReqDTO.getAmount().compareTo(ExchangeReqDTO.getMinPositiveAmount()) < 0) {

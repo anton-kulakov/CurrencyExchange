@@ -1,8 +1,9 @@
 package exception;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class InvalidRequestException extends Exception {
-    public final int code = SC_BAD_REQUEST;
-    public final String message = "The request is not valid";
+    public final int code;
+    public final String message;
 }

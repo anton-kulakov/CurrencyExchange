@@ -15,7 +15,7 @@ public class CurrencyController extends AbstractMainController {
         String currencyCode = req.getPathInfo().replaceAll("/", "");
 
         if (currencyCode.isBlank()) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(SC_BAD_REQUEST, "One or more parameters are not valid");
         }
 
         if (!isCurrencyCodeFollowStandard(currencyCode)) {
@@ -23,7 +23,7 @@ public class CurrencyController extends AbstractMainController {
         }
 
         Currency currency = currencyDAO.getByCode(currencyCode)
-                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND, "The requested currency was not found."));
+                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND, "The requested currency was not found"));
 
         objectMapper.writeValue(resp.getWriter(), currency);
     }

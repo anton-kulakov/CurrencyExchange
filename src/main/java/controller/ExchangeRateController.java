@@ -20,13 +20,13 @@ public class ExchangeRateController extends AbstractMainController {
     @Override
     protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }
 
         ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);
 
         if (!isCurrencyPairFollowStandard(exRateReqDTO)) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(SC_BAD_REQUEST, "One or more parameters are not valid");
         }
 
         ExchangeRate exchangeRate = exchangeRateDAO.getByCodes(exRateReqDTO.getBaseCurrencyCode(), exRateReqDTO.getTargetCurrencyCode())
@@ -50,7 +50,7 @@ public class ExchangeRateController extends AbstractMainController {
     @Override
     protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }
 
         ExchangeRateReqDTO exRateReqDTO = getExRateReqDTO(req);
@@ -58,7 +58,7 @@ public class ExchangeRateController extends AbstractMainController {
         exRateReqDTO.setRate(rate);
 
         if (!isCurrencyPairFollowStandard(exRateReqDTO) || BigDecimal.ZERO.equals(exRateReqDTO.getRate())) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(SC_BAD_REQUEST, "One or more parameters are not valid");
         }
 
         if (exRateReqDTO.getRate().compareTo(ExchangeRateReqDTO.getMinPositiveRate()) < 0) {

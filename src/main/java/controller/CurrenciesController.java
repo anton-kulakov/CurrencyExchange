@@ -25,7 +25,7 @@ public class CurrenciesController extends AbstractMainController {
     @Override
     protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         if (!isRequestValid(req.getParameterMap())) {
-            throw new InvalidRequestException();
+            throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }
 
         String code = req.getParameter("code");
@@ -39,7 +39,7 @@ public class CurrenciesController extends AbstractMainController {
         }
 
         if (!isParametersValid(currencyRequestDTO)) {
-            throw new InvalidParamException();
+            throw new InvalidParamException(SC_BAD_REQUEST, "One or more parameters are not valid");
         }
 
         if (currencyDAO.getByCode(currencyRequestDTO.getCode()).isPresent()) {

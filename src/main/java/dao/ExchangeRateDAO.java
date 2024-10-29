@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+
 public class ExchangeRateDAO {
     private final static ExchangeRateDAO INSTANCE = new ExchangeRateDAO();
     private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
@@ -52,6 +54,8 @@ public class ExchangeRateDAO {
             """;
 
     public Optional<ExchangeRate> save(ExchangeRate exchangeRate) throws DBException {
+        String currencyPair = exchangeRate.getBaseCurrency().getCode() + exchangeRate.getTargetCurrency().getCode();
+
         Connection connection = ConnectionManager.getConnection();
         try (var statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             connection.setAutoCommit(false);
@@ -59,7 +63,8 @@ public class ExchangeRateDAO {
             Optional<Currency> optTargetCurrency = currencyDAO.getByCode(exchangeRate.getTargetCurrency().getCode());
 
             if (optBaseCurrency.isEmpty() || optTargetCurrency.isEmpty()) {
-                throw new DBException();
+                throw new DBException(SC_INTERNAL_SERVER_ERROR,
+                        String.format("The exchange rate %s could not be saved. Something happened with the database. Please try again later!", currencyPair));
             }
 
             Currency baseCurrency = optBaseCurrency.get();
@@ -89,7 +94,7 @@ public class ExchangeRateDAO {
                 throw new RuntimeException(ex);
             }
 
-            throw new DBException();
+            throw new DBException(SC_INTERNAL_SERVER_ERROR, "Something happened with the database. Please try again later!");
         } finally {
             try {
                 connection.close();
@@ -114,11 +119,13 @@ public class ExchangeRateDAO {
                     .map(exchangeRate -> modelMapper.map(exchangeRate, ExchangeRateRespDTO.class))
                     .collect(Collectors.toList());
         } catch (SQLException e) {
-            throw new DBException();
+            throw new DBException(SC_INTERNAL_SERVER_ERROR, "Unable to retrieve a list of exchange rates");
         }
     }
 
     public Optional<ExchangeRate> getByCodes(String baseCurrencyCode, String targetCurrencyCode) throws DBException {
+        String currencyPair = baseCurrencyCode + targetCurrencyCode;
+
         try (var connection = ConnectionManager.getConnection();
              var statement = connection.prepareStatement(GET_BY_CODES_SQL)) {
 
@@ -135,7 +142,8 @@ public class ExchangeRateDAO {
 
             return Optional.ofNullable(exchangeRate);
         } catch (SQLException e) {
-            throw new DBException();
+            throw new DBException(SC_INTERNAL_SERVER_ERROR,
+                    String.format("The attempt to retrieve information about exchange rate %s was unsuccessful", currencyPair));
         }
     }
 
@@ -162,11 +170,13 @@ public class ExchangeRateDAO {
                     resultSet.getBigDecimal("rate")
             );
         } catch (SQLException e) {
-            throw new DBException();
+            throw new DBException(SC_INTERNAL_SERVER_ERROR, "Something happened with the database. Please try again later!");
         }
     }
 
     public boolean update(ExchangeRate exchangeRate) throws DBException {
+        String currencyPair = exchangeRate.getBaseCurrency().getCode() + exchangeRate.getTargetCurrency().getCode();
+
         try (var connection = ConnectionManager.getConnection();
              var statement = connection.prepareStatement(UPDATE_SQL)) {
 
@@ -176,7 +186,8 @@ public class ExchangeRateDAO {
 
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new DBException();
+            throw new DBException(SC_INTERNAL_SERVER_ERROR,
+                    String.format("The exchange rate %s could not be updated. Something happened with the database. Please try again later!", currencyPair));
         }
     }
 
