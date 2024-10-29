@@ -1,10 +1,8 @@
 package dao;
 
-import dto.ExchangeRateRespDTO;
 import entity.Currency;
 import entity.ExchangeRate;
 import exception.DBException;
-import org.modelmapper.ModelMapper;
 import utils.ConnectionManager;
 
 import java.sql.ResultSet;
@@ -13,13 +11,11 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 public class ExchangeRateDAO {
     private final static ExchangeRateDAO INSTANCE = new ExchangeRateDAO();
-    private final ModelMapper modelMapper = new ModelMapper();
     private final static String SAVE_SQL = """
             INSERT INTO exchange_rates
             (base_currency_id, target_currency_id, rate)
@@ -73,7 +69,7 @@ public class ExchangeRateDAO {
         }
     }
 
-    public List<ExchangeRateRespDTO> getAll() throws DBException {
+    public List<ExchangeRate> getAll() throws DBException {
         try (var connection = ConnectionManager.getConnection();
              var statement = connection.prepareStatement(GET_ALL_SQL)) {
 
@@ -84,9 +80,7 @@ public class ExchangeRateDAO {
                 exchangeRates.add(createExchangeRate(resultSet));
             }
 
-            return exchangeRates.stream()
-                    .map(exchangeRate -> modelMapper.map(exchangeRate, ExchangeRateRespDTO.class))
-                    .collect(Collectors.toList());
+            return exchangeRates;
         } catch (SQLException e) {
             throw new DBException(SC_INTERNAL_SERVER_ERROR, "Unable to retrieve a list of exchange rates");
         }
