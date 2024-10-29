@@ -18,9 +18,12 @@ public class ExchangeRateService {
 
     public Optional<ExchangeRate> preserve(ExchangeRateReqDTO exchangeRateReqDTO) throws DBException, RestErrorException {
         Currency baseCurrency = currencyDAO.getByCode(exchangeRateReqDTO.getBaseCurrencyCode())
-                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND, "Currency " + exchangeRateReqDTO.getBaseCurrencyCode() + " do not exist"));
+                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND,
+                        String.format("Currency %s do not exist", exchangeRateReqDTO.getBaseCurrencyCode())));
+
         Currency targetCurrency = currencyDAO.getByCode(exchangeRateReqDTO.getTargetCurrencyCode())
-                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND, "Currency " + exchangeRateReqDTO.getTargetCurrencyCode() + " do not exist"));
+                .orElseThrow(() -> new RestErrorException(SC_NOT_FOUND,
+                        String.format("Currency %s do not exist", exchangeRateReqDTO.getTargetCurrencyCode())));
 
         ExchangeRate exchangeRate = new ExchangeRate();
         exchangeRate.setBaseCurrency(baseCurrency);

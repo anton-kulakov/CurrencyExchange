@@ -7,8 +7,6 @@ import exception.DBException;
 import org.modelmapper.ModelMapper;
 import utils.ConnectionManager;
 
-import java.math.BigDecimal;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -21,7 +19,6 @@ import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 public class ExchangeRateDAO {
     private final static ExchangeRateDAO INSTANCE = new ExchangeRateDAO();
-    private final CurrencyDAO currencyDAO = CurrencyDAO.getInstance();
     private final ModelMapper modelMapper = new ModelMapper();
     private final static String SAVE_SQL = """
             INSERT INTO exchange_rates
@@ -54,28 +51,14 @@ public class ExchangeRateDAO {
             """;
 
     public Optional<ExchangeRate> save(ExchangeRate exchangeRate) throws DBException {
-        String currencyPair = exchangeRate.getBaseCurrency().getCode() + exchangeRate.getTargetCurrency().getCode();
+        try (var connection = ConnectionManager.getConnection();
+             var statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
-        Connection connection = ConnectionManager.getConnection();
-        try (var statement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
-            connection.setAutoCommit(false);
-            Optional<Currency> optBaseCurrency = currencyDAO.getByCode(exchangeRate.getBaseCurrency().getCode());
-            Optional<Currency> optTargetCurrency = currencyDAO.getByCode(exchangeRate.getTargetCurrency().getCode());
-
-            if (optBaseCurrency.isEmpty() || optTargetCurrency.isEmpty()) {
-                throw new DBException(SC_INTERNAL_SERVER_ERROR,
-                        String.format("The exchange rate %s could not be saved. Something happened with the database. Please try again later!", currencyPair));
-            }
-
-            Currency baseCurrency = optBaseCurrency.get();
-            Currency targetCurrency = optTargetCurrency.get();
-            BigDecimal rate = exchangeRate.getRate();
-
-            statement.setInt(1, baseCurrency.getId());
-            statement.setInt(2, targetCurrency.getId());
-            statement.setBigDecimal(3, rate);
-
+            statement.setInt(1, exchangeRate.getBaseCurrency().getId());
+            statement.setInt(2, exchangeRate.getTargetCurrency().getId());
+            statement.setBigDecimal(3, exchangeRate.getRate());
             statement.executeUpdate();
+
             ResultSet generatedKeys = statement.getGeneratedKeys();
 
             if (generatedKeys.next()) {
@@ -84,23 +67,9 @@ public class ExchangeRateDAO {
                 exchangeRate = null;
             }
 
-            connection.commit();
-
             return Optional.ofNullable(exchangeRate);
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-
             throw new DBException(SC_INTERNAL_SERVER_ERROR, "Something happened with the database. Please try again later!");
-        } finally {
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
