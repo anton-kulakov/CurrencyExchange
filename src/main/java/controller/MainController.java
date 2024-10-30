@@ -26,8 +26,14 @@ public class MainController extends HttpServlet {
     protected ObjectMapper objectMapper;
     protected CurrencyDAO currencyDAO;
     protected ExchangeRateDAO exchangeRateDAO;
-    private static Set<String> currencyCodes;
+    private static final Set<String> currencyCodes;
 
+    static {
+        Set<Currency> currencies = Currency.getAvailableCurrencies();
+        currencyCodes = currencies.stream()
+                .map(Currency::getCurrencyCode)
+                .collect(Collectors.toSet());
+    }
     public void init() throws ServletException {
         super.init();
         objectMapper = new ObjectMapper();
@@ -71,13 +77,6 @@ public class MainController extends HttpServlet {
     }
 
     public static boolean isCurrencyCodeFollowStandard(String code) {
-        if (currencyCodes == null) {
-            Set<Currency> currencies = Currency.getAvailableCurrencies();
-            currencyCodes = currencies.stream()
-                    .map(Currency::getCurrencyCode)
-                    .collect(Collectors.toSet());
-        }
-
         return currencyCodes.contains(code);
     }
 
