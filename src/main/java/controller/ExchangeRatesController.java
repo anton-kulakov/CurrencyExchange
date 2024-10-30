@@ -9,22 +9,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import service.ExchangeRateService;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
 
-public class ExchangeRatesController extends AbstractMainController {
+public class ExchangeRatesController extends MainController {
     private final ExchangeRateService exchangeRateService = new ExchangeRateService();
 
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         objectMapper.writeValue(resp.getWriter(), exchangeRateDAO.getAll());
     }
 
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (!isRequestValid(req.getParameterMap())) {
             throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }

@@ -9,21 +9,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.modelmapper.ModelMapper;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
 import static jakarta.servlet.http.HttpServletResponse.*;
 
-public class CurrenciesController extends AbstractMainController {
+public class CurrenciesController extends MainController {
     private final static ModelMapper modelMapper = new ModelMapper();
 
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         objectMapper.writeValue(resp.getWriter(), currencyDAO.getAll());
     }
 
     @Override
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (!isRequestValid(req.getParameterMap())) {
             throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }

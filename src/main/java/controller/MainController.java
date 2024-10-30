@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class AbstractMainController extends HttpServlet {
+public class MainController extends HttpServlet {
     protected ObjectMapper objectMapper;
     protected CurrencyDAO currencyDAO;
     protected ExchangeRateDAO exchangeRateDAO;
@@ -35,20 +35,14 @@ public abstract class AbstractMainController extends HttpServlet {
         exchangeRateDAO = ExchangeRateDAO.getInstance();
     }
 
-    @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void service(HttpServletRequest req, HttpServletResponse resp) {
         String method = req.getMethod();
-
-        if ("PATCH".equalsIgnoreCase(method)) {
-            doPatch(req, resp);
-        } else {
-            super.service(req, resp);
-        }
-    }
-
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         try {
-            handleGet(req, resp);
+            if ("PATCH".equalsIgnoreCase(method)) {
+                doPatch(req, resp);
+            } else {
+                super.service(req, resp);
+            }
         } catch (RestErrorException e) {
             sendError(e.code, e.message, resp);
         } catch (InvalidParamException e) {
@@ -62,36 +56,8 @@ public abstract class AbstractMainController extends HttpServlet {
         }
     }
 
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
-        try {
-            handlePost(req, resp);
-        } catch (RestErrorException e) {
-            sendError(e.code, e.message, resp);
-        } catch (InvalidParamException e) {
-            sendError(e.code, e.message, resp);
-        } catch (InvalidRequestException e) {
-            sendError(e.code, e.message, resp);
-        } catch (DBException e) {
-            sendError(e.code, e.message, resp);
-        } catch (Exception e) {
-            sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
-        }
-    }
+    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) {
-        try {
-            handlePatch(req, resp);
-        } catch (RestErrorException e) {
-            sendError(e.code, e.message, resp);
-        } catch (InvalidParamException e) {
-            sendError(e.code, e.message, resp);
-        } catch (InvalidRequestException e) {
-            sendError(e.code, e.message, resp);
-        } catch (DBException e) {
-            sendError(e.code, e.message, resp);
-        } catch (Exception e) {
-            sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Fatal error", resp);
-        }
     }
 
     protected void sendError(int code, String message, HttpServletResponse resp) {
@@ -102,16 +68,6 @@ public abstract class AbstractMainController extends HttpServlet {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    abstract protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception;
-
-    protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-
-    }
-
-    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-
     }
 
     public static boolean isCurrencyCodeFollowStandard(String code) {

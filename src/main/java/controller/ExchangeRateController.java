@@ -15,10 +15,10 @@ import java.math.BigDecimal;
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
-public class ExchangeRateController extends AbstractMainController {
+public class ExchangeRateController extends MainController {
 
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
             throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }
@@ -47,8 +47,7 @@ public class ExchangeRateController extends AbstractMainController {
         return exRateReqDTO;
     }
 
-    @Override
-    protected void handlePatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (req.getPathInfo().isBlank() || req.getPathInfo().replaceAll("[^a-zA-Z]", "").length() != 6) {
             throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }

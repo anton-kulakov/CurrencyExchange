@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import service.ExchangeService;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
@@ -16,11 +17,11 @@ import java.util.Set;
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
-public class ExchangeController extends AbstractMainController {
+public class ExchangeController extends MainController {
     private final ExchangeService exchangeService = new ExchangeService();
 
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (!isRequestValid(req.getParameterMap())) {
             throw new InvalidRequestException(SC_BAD_REQUEST, "The request isn't valid");
         }

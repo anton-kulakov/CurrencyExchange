@@ -6,12 +6,14 @@ import exception.RestErrorException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
+
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
-public class CurrencyController extends AbstractMainController {
+public class CurrencyController extends MainController {
     @Override
-    protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String currencyCode = req.getPathInfo().replaceAll("/", "");
 
         if (currencyCode.isBlank()) {
