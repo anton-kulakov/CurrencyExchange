@@ -7,7 +7,7 @@ import utils.ConnectionManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,7 +58,7 @@ public class CurrencyDAO {
         try (var connection = ConnectionManager.getConnection();
              var statement = connection.prepareStatement(GET_ALL_SQL)) {
 
-            List<Currency> currencies = new LinkedList<>();
+            List<Currency> currencies = new ArrayList<>();
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
